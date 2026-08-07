@@ -9,10 +9,18 @@ import {
 } from './seed-data';
 
 export async function seedIfNeeded(db: AppDatabase): Promise<void> {
-  const existing = await db.select().from(profile).limit(1);
-  if (existing.length > 0) return;
-
-  await db.insert(profile).values(SEED_PROFILE);
+  // A plain "check then insert" is a race: every page load calls this, and
+  // concurrent requests can all see an empty table before any of them
+  // commits, seeding multiple times over. Fixing `id: 1` turns the insert
+  // itself into the atomic race gate — only the caller that actually inserts
+  // row 1 proceeds; every concurrent loser gets `onConflictDoNothing`'s empty
+  // result and returns immediately.
+  const inserted = await db
+    .insert(profile)
+    .values({ id: 1, ...SEED_PROFILE })
+    .onConflictDoNothing()
+    .returning();
+  if (inserted.length === 0) return;
 
   await db.insert(workoutSplitDays).values(
     SEED_WORKOUT_SPLIT.map((label, i) => ({ orderIndex: i, label })),

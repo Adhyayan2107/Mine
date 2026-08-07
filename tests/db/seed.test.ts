@@ -21,4 +21,20 @@ describe('seedIfNeeded', () => {
     await seedIfNeeded(db);
     expect(await db.select().from(habits)).toHaveLength(10);
   });
+
+  it('concurrent calls only seed once (regression: check-then-insert race)', async () => {
+    const db = await createTestDb();
+
+    await Promise.all([
+      seedIfNeeded(db),
+      seedIfNeeded(db),
+      seedIfNeeded(db),
+      seedIfNeeded(db),
+      seedIfNeeded(db),
+    ]);
+
+    expect(await db.select().from(profile)).toHaveLength(1);
+    expect(await db.select().from(habits)).toHaveLength(10);
+    expect(await db.select().from(categories)).toHaveLength(5);
+  });
 });
