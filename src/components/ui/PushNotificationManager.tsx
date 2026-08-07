@@ -49,22 +49,25 @@ export function PushNotificationManager() {
 
   if (!isSupported) {
     return (
-      <p className="p-4 text-sm text-neutral-500">Push notifications aren&apos;t supported in this browser.</p>
+      <p className="p-4 text-sm text-ink-faint">Push notifications aren&apos;t supported in this browser.</p>
     );
   }
 
   return (
     <div className="p-4">
-      <h2 className="mb-2 text-sm font-medium text-neutral-400">Notifications</h2>
+      <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-muted">Notifications</h2>
       {subscription ? (
         <button
           onClick={unsubscribe}
-          className="w-full rounded-md border border-neutral-700 px-4 py-3 text-neutral-100"
+          className="w-full rounded-lg border border-hairline px-4 py-3 font-medium text-ink transition-transform active:scale-[0.98]"
         >
           Disable Notifications
         </button>
       ) : (
-        <button onClick={subscribe} className="w-full rounded-md bg-teal-600 px-4 py-3 font-medium text-white">
+        <button
+          onClick={subscribe}
+          className="w-full rounded-lg bg-ember px-4 py-3 font-semibold text-ember-ink transition-transform active:scale-[0.98]"
+        >
           Enable Notifications
         </button>
       )}

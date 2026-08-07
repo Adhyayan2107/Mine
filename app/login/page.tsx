@@ -8,21 +8,33 @@ export default async function LoginPage({
   const { error } = await searchParams;
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-neutral-950 px-4">
-      <form action={login} className="w-full max-w-sm space-y-4">
-        <h1 className="text-xl font-semibold text-neutral-100">Adhyayan OS</h1>
+    <main className="flex min-h-screen items-center justify-center bg-canvas px-6">
+      <form action={login} className="w-full max-w-sm">
+        <div className="mb-8 flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-md bg-ember text-lg font-bold text-ember-ink">
+            A
+          </span>
+          <div>
+            <h1 className="font-display text-xl font-bold leading-none text-ink">Adhyayan OS</h1>
+            <p className="text-xs text-ink-faint">Your log. Your log only.</p>
+          </div>
+        </div>
+
+        <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-ink-muted">
+          Password
+        </label>
         <input
           type="password"
           name="password"
-          placeholder="Password"
+          placeholder="••••••••"
           autoFocus
           required
-          className="w-full rounded-md border border-neutral-700 bg-neutral-900 px-4 py-3 text-neutral-100"
+          className="mb-3 w-full rounded-lg border border-hairline bg-surface px-4 py-3.5 text-ink placeholder:text-ink-faint"
         />
-        {error && <p className="text-sm text-red-400">Wrong password.</p>}
+        {error && <p className="mb-3 text-sm text-danger">Wrong password. Try again.</p>}
         <button
           type="submit"
-          className="w-full rounded-md bg-teal-600 px-4 py-3 font-medium text-white"
+          className="w-full rounded-lg bg-ember px-4 py-3.5 font-semibold text-ember-ink transition-transform active:scale-[0.98]"
         >
           Enter
         </button>
