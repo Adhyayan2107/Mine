@@ -3,12 +3,18 @@ import './globals.css';
 import { db } from '@/db/client';
 import { seedIfNeeded } from '@/db/seed';
 import { getProfile } from '@/db/queries/profile';
+import { PWARegister } from '@/components/pwa/PWARegister';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Adhyayan OS',
   description: 'Personal dashboard, to-dos, habits, and journal.',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Adhyayan OS',
+  },
 };
 
 export const viewport: Viewport = {
@@ -24,7 +30,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="en" className={isDark ? 'dark' : ''}>
-      <body>{children}</body>
+      <body>
+        <PWARegister />
+        {children}
+      </body>
     </html>
   );
 }
