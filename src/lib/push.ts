@@ -1,4 +1,4 @@
-import webpush from 'web-push';
+import webpush, { WebPushError } from 'web-push';
 import { eq } from 'drizzle-orm';
 import type { AppDatabase } from '../db/types';
 import { pushSubscriptions } from '../db/schema';
@@ -27,8 +27,8 @@ export async function sendPushToAll(db: AppDatabase, payload: NotificationPayloa
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
           JSON.stringify(payload),
         );
-      } catch (err: any) {
-        if (err?.statusCode === 404 || err?.statusCode === 410) {
+      } catch (err) {
+        if (err instanceof WebPushError && (err.statusCode === 404 || err.statusCode === 410)) {
           // Subscription is gone (browser data cleared, app uninstalled) — stop trying it.
           await db.delete(pushSubscriptions).where(eq(pushSubscriptions.id, sub.id));
         } else {

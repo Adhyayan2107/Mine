@@ -52,7 +52,9 @@ async function clearAllTables(db: AppDatabase): Promise<void> {
   await db.delete(profile);
 }
 
-export async function importAllTables(db: AppDatabase, raw: any): Promise<void> {
+type ExportedData = Partial<Awaited<ReturnType<typeof exportAllTables>>> & { schemaVersion: number };
+
+export async function importAllTables(db: AppDatabase, raw: ExportedData): Promise<void> {
   if (raw.schemaVersion !== EXPORT_SCHEMA_VERSION) {
     throw new Error(`Unsupported export schema version: ${raw.schemaVersion}`);
   }

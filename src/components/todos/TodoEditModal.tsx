@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { createTodoAction, updateTodoAction } from '@/actions/todos';
 import type { Todo, Category } from '@/db/schema';
@@ -23,13 +23,16 @@ export function TodoEditModal({
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [dueDate, setDueDate] = useState('');
 
-  useEffect(() => {
-    if (!open) return;
-    setTitle(existing?.title ?? '');
-    setPriority((existing?.priority as 'low' | 'medium' | 'high') ?? 'medium');
-    setCategoryId(existing?.categoryId ?? null);
-    setDueDate(existing?.dueDate ?? '');
-  }, [open, existing]);
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) {
+      setTitle(existing?.title ?? '');
+      setPriority((existing?.priority as 'low' | 'medium' | 'high') ?? 'medium');
+      setCategoryId(existing?.categoryId ?? null);
+      setDueDate(existing?.dueDate ?? '');
+    }
+  }
 
   if (!open) return null;
 

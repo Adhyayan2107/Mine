@@ -1,21 +1,33 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { subscribeToPushAction, unsubscribeFromPushAction } from '@/actions/push-subscription';
 import { urlBase64ToUint8Array } from '@/lib/push-client';
 
+// Push support is a stable browser capability, not React state — reading it
+// via useSyncExternalStore (rather than setState inside an effect) is the
+// hydration-safe way to detect a client-only value: it reports `false` on
+// the server (getServerSnapshot) and the real value once mounted client-side.
+function subscribeNoop() {
+  return () => {};
+}
+function getSupportSnapshot(): boolean {
+  return 'serviceWorker' in navigator && 'PushManager' in window;
+}
+function getServerSupportSnapshot(): boolean {
+  return false;
+}
+
 export function PushNotificationManager() {
-  const [isSupported, setIsSupported] = useState(false);
+  const isSupported = useSyncExternalStore(subscribeNoop, getSupportSnapshot, getServerSupportSnapshot);
   const [subscription, setSubscription] = useState<PushSubscription | null>(null);
 
   useEffect(() => {
-    if ('serviceWorker' in navigator && 'PushManager' in window) {
-      setIsSupported(true);
-      navigator.serviceWorker.ready.then(async (registration) => {
-        setSubscription(await registration.pushManager.getSubscription());
-      });
-    }
-  }, []);
+    if (!isSupported) return;
+    navigator.serviceWorker.ready.then(async (registration) => {
+      setSubscription(await registration.pushManager.getSubscription());
+    });
+  }, [isSupported]);
 
   async function subscribe() {
     const registration = await navigator.serviceWorker.ready;

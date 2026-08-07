@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 
 export function ConfirmTypeDialog({
@@ -19,10 +19,11 @@ export function ConfirmTypeDialog({
   onCancel: () => void;
 }) {
   const [typed, setTyped] = useState('');
-
-  useEffect(() => {
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
     if (open) setTyped('');
-  }, [open]);
+  }
 
   if (!open) return null;
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { createHabitAction, updateHabitAction } from '@/actions/habits';
 import type { Habit } from '@/db/schema';
@@ -17,10 +17,11 @@ export function HabitEditModal({
   onSaved: () => void;
 }) {
   const [name, setName] = useState('');
-
-  useEffect(() => {
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
     if (open) setName(existing?.name ?? '');
-  }, [open, existing]);
+  }
 
   if (!open) return null;
 

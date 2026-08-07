@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 
 export function QuickNumberModal({
@@ -19,10 +19,15 @@ export function QuickNumberModal({
   onClose: () => void;
 }) {
   const [value, setValue] = useState(initialValue?.toString() ?? '');
-
-  useEffect(() => {
+  // Reset the field when the modal transitions from closed to open — this is
+  // React's documented "adjust state during render" pattern (not an effect),
+  // since the component never unmounts between opens (the parent always
+  // renders it, just toggling `open`).
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
     if (open) setValue(initialValue?.toString() ?? '');
-  }, [open, initialValue]);
+  }
 
   if (!open) return null;
 
