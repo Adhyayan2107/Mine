@@ -4,6 +4,7 @@ import {
   insertHabit,
   toggleHabitToday,
   listCompletedHabitIdsForDate,
+  listRecentCompletionsForHabits,
   currentStreak,
   longestStreak,
 } from '@/db/queries/habits';
@@ -47,5 +48,26 @@ describe('habit queries', () => {
 
     expect(await currentStreak(db, habit.id, today)).toBe(3);
     expect(await longestStreak(db, habit.id)).toBe(3);
+  });
+
+  it('listRecentCompletionsForHabits batches every habit into one query, excluding dates before the window', async () => {
+    const db = await createTestDb();
+    const gym = await insertHabit(db, { name: 'Gym' });
+    const journal = await insertHabit(db, { name: 'Journal' });
+    const today = '2026-08-07';
+
+    await toggleHabitToday(db, gym.id, today);
+    await toggleHabitToday(db, gym.id, '2026-07-01'); // outside the 30-day window below
+    await toggleHabitToday(db, journal.id, addDaysToDateString(today, -1));
+
+    const result = await listRecentCompletionsForHabits(
+      db,
+      [gym.id, journal.id],
+      addDaysToDateString(today, -29),
+    );
+
+    expect(result.get(gym.id)?.has(today)).toBe(true);
+    expect(result.get(gym.id)?.has('2026-07-01')).toBe(false);
+    expect(result.get(journal.id)?.has(addDaysToDateString(today, -1))).toBe(true);
   });
 });

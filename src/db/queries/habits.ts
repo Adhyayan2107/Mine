@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, gte, inArray } from 'drizzle-orm';
 import type { AppDatabase } from '../types';
 import { habits, habitCompletions, type Habit, type NewHabit, type HabitCompletion } from '../schema';
 import { addDaysToDateString, dateStringDiffInDays } from '../../lib/dates';
@@ -27,6 +27,25 @@ export async function listCompletionsForHabit(db: AppDatabase, habitId: number):
 export async function listCompletedHabitIdsForDate(db: AppDatabase, date: string): Promise<Set<number>> {
   const rows = await db.select().from(habitCompletions).where(eq(habitCompletions.date, date));
   return new Set(rows.map((r) => r.habitId));
+}
+
+/** One query for every habit's heatmap, instead of one query per habit. */
+export async function listRecentCompletionsForHabits(
+  db: AppDatabase,
+  habitIds: number[],
+  sinceDate: string,
+): Promise<Map<number, Set<string>>> {
+  const map = new Map<number, Set<string>>(habitIds.map((id) => [id, new Set<string>()]));
+  if (habitIds.length === 0) return map;
+
+  const rows = await db
+    .select()
+    .from(habitCompletions)
+    .where(and(inArray(habitCompletions.habitId, habitIds), gte(habitCompletions.date, sinceDate)));
+  for (const row of rows) {
+    map.get(row.habitId)?.add(row.date);
+  }
+  return map;
 }
 
 /**

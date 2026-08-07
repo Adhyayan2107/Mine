@@ -35,24 +35,27 @@ export function HabitEditModal({
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-end bg-black/60 md:items-center md:justify-center">
-      <div className="w-full space-y-3 rounded-t-2xl bg-neutral-900 p-6 md:w-96 md:rounded-2xl">
-        <h2 className="text-lg font-semibold text-neutral-100">{existing ? 'Edit Habit' : 'New Habit'}</h2>
+    <div className="fixed inset-0 z-50 flex items-end bg-black/70 backdrop-blur-sm md:items-center md:justify-center">
+      <div className="modal-enter w-full space-y-3 rounded-t-2xl border border-hairline bg-surface-raised p-6 shadow-2xl md:w-96 md:rounded-2xl">
+        <h2 className="font-display text-lg font-semibold text-ink">{existing ? 'Edit Habit' : 'New Habit'}</h2>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Habit name"
+          placeholder="e.g. Gym, Read 30 minutes"
           autoFocus
-          className="w-full rounded-md border border-neutral-700 bg-neutral-800 px-4 py-3 text-neutral-100"
+          className="w-full rounded-lg border border-hairline bg-surface px-4 py-3 text-ink placeholder:text-ink-faint"
         />
         <div className="flex gap-2 pt-2">
-          <button onClick={onClose} className="flex-1 rounded-md border border-neutral-700 py-3 text-neutral-300">
+          <button
+            onClick={onClose}
+            className="flex-1 rounded-lg border border-hairline py-3 font-medium text-ink-muted transition-transform active:scale-[0.97]"
+          >
             Cancel
           </button>
           <button
             onClick={save}
             disabled={!name}
-            className="flex-1 rounded-md bg-teal-600 py-3 font-medium text-white disabled:opacity-40"
+            className="flex-1 rounded-lg bg-ember py-3 font-semibold text-ember-ink transition-transform active:scale-[0.97] disabled:opacity-40"
           >
             Save
           </button>

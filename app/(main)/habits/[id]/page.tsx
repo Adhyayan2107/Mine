@@ -24,6 +24,7 @@ export default async function HabitDetailPage({ params }: { params: Promise<{ id
       completionDates={completions.map((c) => c.date)}
       currentStreak={current}
       longestStreak={longest}
+      today={today}
     />
   );
 }
