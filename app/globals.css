@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Tailwind v4 has no JS config file — this opts `dark:` utilities into a
+   class-based strategy (toggled on <html>) instead of the OS media-query
+   default, matching the profile.themeMode preference set in Settings. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 html {
   color-scheme: dark;
 }
