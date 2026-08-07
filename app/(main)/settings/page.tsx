@@ -3,6 +3,7 @@ import { getProfile } from '@/db/queries/profile';
 import { ProfileEditForm } from '@/components/settings/ProfileEditForm';
 import { ThemePicker } from '@/components/settings/ThemePicker';
 import { DataPortabilitySection } from '@/components/settings/DataPortabilitySection';
+import { PushNotificationManager } from '@/components/ui/PushNotificationManager';
 
 export default async function SettingsPage() {
   const profile = await getProfile(db);
@@ -13,6 +14,7 @@ export default async function SettingsPage() {
       <ProfileEditForm profile={profile} />
       <ThemePicker themeMode={profile.themeMode} />
       <DataPortabilitySection />
+      <PushNotificationManager />
     </div>
   );
 }
