@@ -24,10 +24,13 @@ export function JournalForm({ entry }: { entry: JournalEntry | null }) {
   }
 
   return (
-    <div className="space-y-4 p-4">
+    <div className="space-y-5 p-4 pb-24">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Today&apos;s Journal</h1>
-        <Link href="/journal/history" className="text-sm text-teal-400">
+        <div>
+          <h1 className="font-display text-2xl font-bold text-ink">Journal</h1>
+          <p className="text-sm text-ink-muted">Today&apos;s entry</p>
+        </div>
+        <Link href="/journal/history" className="text-sm font-medium text-ember">
           History
         </Link>
       </div>
@@ -43,9 +46,9 @@ export function JournalForm({ entry }: { entry: JournalEntry | null }) {
       <button
         onClick={save}
         disabled={saving}
-        className="w-full rounded-md bg-teal-600 py-3 font-medium text-white disabled:opacity-40"
+        className="w-full rounded-lg bg-ember py-3.5 font-semibold text-ember-ink transition-transform active:scale-[0.98] disabled:opacity-40"
       >
-        Save
+        {saving ? 'Saving…' : 'Save entry'}
       </button>
     </div>
   );
@@ -54,12 +57,14 @@ export function JournalForm({ entry }: { entry: JournalEntry | null }) {
 function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <div>
-      <label className="mb-1 block text-xs font-medium text-neutral-400">{label}</label>
+      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-muted">
+        {label}
+      </label>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={2}
-        className="w-full rounded-md border border-neutral-700 bg-neutral-800 px-3 py-2 text-neutral-100"
+        className="w-full rounded-lg border border-hairline bg-surface px-3 py-2.5 text-ink placeholder:text-ink-faint"
       />
     </div>
   );
@@ -76,16 +81,16 @@ function RatingField({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-xs font-medium text-neutral-400">{label}</label>
+      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-muted">
+        {label}
+      </label>
       <div className="flex gap-2">
         {[1, 2, 3, 4, 5].map((n) => (
           <button
             key={n}
             onClick={() => onChange(n)}
-            className={`h-10 w-10 rounded-full border-2 ${
-              value === n
-                ? 'border-teal-500 bg-teal-500/20 text-teal-300'
-                : 'border-neutral-700 text-neutral-400'
+            className={`h-11 w-11 rounded-full border-2 font-mono font-semibold transition-transform active:scale-90 ${
+              value === n ? 'border-ember bg-ember/15 text-ember' : 'border-hairline text-ink-muted'
             }`}
           >
             {n}

@@ -29,16 +29,17 @@ export function DataPortabilitySection() {
 
   return (
     <div className="space-y-2 p-4">
+      <h2 className="mb-1 text-xs font-semibold uppercase tracking-wide text-ink-muted">Your data</h2>
       <button
         onClick={handleExport}
-        className="w-full rounded-md border border-neutral-700 px-4 py-3 text-left text-neutral-100"
+        className="w-full rounded-lg border border-hairline px-4 py-3 text-left font-medium text-ink transition-transform active:scale-[0.98]"
       >
         Export Data
       </button>
 
       <button
         onClick={() => fileInputRef.current?.click()}
-        className="w-full rounded-md border border-neutral-700 px-4 py-3 text-left text-neutral-100"
+        className="w-full rounded-lg border border-hairline px-4 py-3 text-left font-medium text-ink transition-transform active:scale-[0.98]"
       >
         Import Data
       </button>
@@ -55,7 +56,7 @@ export function DataPortabilitySection() {
 
       <button
         onClick={() => setResetOpen(true)}
-        className="w-full rounded-md border border-red-800 px-4 py-3 text-left text-red-400"
+        className="w-full rounded-lg border border-danger/40 px-4 py-3 text-left font-medium text-danger transition-transform active:scale-[0.98]"
       >
         Reset All Data
       </button>

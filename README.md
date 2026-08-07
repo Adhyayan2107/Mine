@@ -19,13 +19,31 @@ one-handed, mid-gym, on a phone.
   habit-completion and tasks-remaining at a glance. Widgets are reorderable
   and can be hidden.
 - **To-Dos** — priorities, due dates, categories, one-tap complete.
-- **Habits** — one-tap daily checkoff, current/longest streaks, full history.
+- **Habits** — one-tap daily checkoff that "stamps" a square, a 30-day
+  heatmap strip per habit on the list, a full 14-week GitHub-style
+  contribution grid on each habit's detail page, and a streak flame that
+  gets brighter the longer you keep it alive.
+- **Calendar** — a full month view where every day's activity (weight logged,
+  workout done, habits stamped, journal written) shows as a filled square;
+  tap any day for the full breakdown of everything logged that day.
 - **Journal** — morning plan, wins, lessons, tomorrow's focus, mood & energy.
 - **Settings** — edit profile & daily targets, theme preference, full JSON
   export/import, and a guarded (type-to-confirm) full data reset.
 - **Push notifications** — installs to your home screen like a native app and
   sends three daily nudges: unlogged weight / tasks due (morning), water
   intake behind pace (midday), open habits / overdue tasks (evening).
+
+## Design system
+
+A "training log" direction, not a soft wellness-app look: a warm charcoal
+canvas (`--color-canvas`), two accents with distinct jobs — **ember**
+(act now / streak heat / due) and **moss** (done / confirmed) — Space
+Grotesk for headers and stat numbers, IBM Plex Sans for body text, IBM Plex
+Mono for data values. Every "completed" state across the app (habit
+checkoffs, calendar days, heatmap cells) renders as the same small stamped
+square (see the `stamp-in` animation in `app/globals.css`), so the visual
+language stays consistent everywhere. Tokens live in `app/globals.css`'s
+`@theme` block (Tailwind v4 has no JS config file for this).
 
 ## Local development
 
@@ -51,6 +69,13 @@ brew install postgresql@16 && brew services start postgresql@16 && createdb adhy
 npm test    # query and rule logic against an in-memory Postgres (PGlite) — no external DB needed
 npm run lint
 ```
+
+For visual QA, `scripts/screenshot.mjs` and `scripts/screenshot-click.mjs` drive
+headless Chromium (via the `playwright` dev dependency) to screenshot a
+running `npm run dev` at iPhone width — pass a `COOKIE=<session value>` env
+var to screenshot authenticated pages, and a text string as the second arg
+to `screenshot-click.mjs` to click something (e.g. a calendar day) before
+capturing.
 
 ## Deploying to Vercel
 
@@ -87,8 +112,13 @@ src/
 │   ├── client.ts      production db (Postgres)
 │   ├── test-client.ts createTestDb() via PGlite
 │   └── queries/        testable query functions, one file per feature
+│       └── calendar.ts  month activity + full day-detail aggregation
 ├── actions/            'use server' wrappers around queries
 ├── components/         client UI, grouped by feature
+│   ├── habits/HabitHeatmap.tsx   strip (list) + full grid (detail)
+│   ├── calendar/                 month grid + day-detail bottom sheet
+│   └── nav/icons.tsx             hand-drawn nav icons, no icon library
 └── lib/                dates, auth, push, notification rules
 tests/                 mirrors src/, Vitest against PGlite
+scripts/               screenshot.mjs / screenshot-click.mjs — Playwright visual QA
 ```
