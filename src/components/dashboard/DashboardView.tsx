@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   logWeightAction,
-  logCaloriesAction,
-  logProteinAction,
+  addCaloriesAction,
+  addProteinAction,
   logStepsAction,
   addWaterAction,
   setWorkoutSplitDayAction,
@@ -122,8 +122,8 @@ export function DashboardView({
 
   async function submit(value: number) {
     if (quickField === 'weight') await logWeightAction(value);
-    if (quickField === 'calories') await logCaloriesAction(value);
-    if (quickField === 'protein') await logProteinAction(value);
+    if (quickField === 'calories') await addCaloriesAction(value);
+    if (quickField === 'protein') await addProteinAction(value);
     if (quickField === 'steps') await logStepsAction(value);
     setQuickField(null);
     router.refresh();
@@ -315,9 +315,9 @@ export function DashboardView({
           quickField === 'weight'
             ? 'Log weight'
             : quickField === 'calories'
-              ? 'Log calories eaten'
+              ? `Add calories · ${caloriesEaten} so far`
               : quickField === 'protein'
-                ? 'Log protein'
+                ? `Add protein · ${protein} g so far`
                 : 'Log steps'
         }
         unit={

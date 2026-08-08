@@ -28,8 +28,11 @@ export function ElevationProfile({
   const padR = 52;
   const baseY = H - 12;
   const plotW = W - padR;
-  const min = Math.min(...weights);
-  const max = Math.max(...weights);
+  // The goal altitude is always part of the picture: the y-domain stretches
+  // to include it, so the dashed goal rule and the weight line share a scale
+  // and the distance between them reads truthfully.
+  const min = Math.min(...weights, ...(goalKg !== undefined ? [goalKg] : []));
+  const max = Math.max(...weights, ...(goalKg !== undefined ? [goalKg] : []));
   const range = max - min || 1;
   const yOf = (w: number) => padY + (baseY - 6 - padY) * (1 - (w - min) / range);
   const single = weights.length === 1;
@@ -42,13 +45,12 @@ export function ElevationProfile({
   const last = coords[coords.length - 1];
   const current = weights[weights.length - 1];
 
-  // A rule may only be drawn where the y-scale exists: inside [min, max].
-  // Anything outside the window becomes a margin note instead.
+  // The goal is in-domain by construction; the ATH rules across only when it
+  // falls inside, otherwise it becomes a margin note.
   const inDomain = (v: number) => v >= min && v <= max;
-  const showGoalRule = goalKg !== undefined && !single && inDomain(goalKg);
+  const showGoalRule = goalKg !== undefined && !single;
   const showAthRule = athKg != null && !single && inDomain(athKg) && athKg !== max;
   const marginNotes: Array<{ text: string; color: string }> = [];
-  if (goalKg !== undefined && !showGoalRule) marginNotes.push({ text: `GOAL ${goalKg}`, color: 'var(--color-pine-deep)' });
   if (athKg != null && !showAthRule && athKg > max) marginNotes.push({ text: `ATH ${athKg}`, color: 'var(--color-ink-faint)' });
 
   return (
@@ -112,12 +114,16 @@ export function ElevationProfile({
       {/* spot heights and out-of-window notes in the right margin */}
       {!single && (
         <>
-          <text x={plotW + 8} y={padY + 4} fontSize="10" fontFamily="var(--font-mono)" fill="var(--color-ink-faint)">
-            {max.toFixed(1)}
-          </text>
-          <text x={plotW + 8} y={baseY - 4} fontSize="10" fontFamily="var(--font-mono)" fill="var(--color-ink-faint)">
-            {min.toFixed(1)}
-          </text>
+          {max !== goalKg && (
+            <text x={plotW + 8} y={padY + 4} fontSize="10" fontFamily="var(--font-mono)" fill="var(--color-ink-faint)">
+              {max.toFixed(1)}
+            </text>
+          )}
+          {min !== goalKg && (
+            <text x={plotW + 8} y={baseY - 4} fontSize="10" fontFamily="var(--font-mono)" fill="var(--color-ink-faint)">
+              {min.toFixed(1)}
+            </text>
+          )}
         </>
       )}
       {marginNotes.map((n, i) => (

@@ -77,12 +77,14 @@ export type LastSession = {
   bestWeightKg: number;
   bestReps: number;
   sets: number;
+  /** Every set of that session, in order — shown so the last outing is beatable set by set. */
+  detail: Array<{ weightKg: number; reps: number }>;
 };
 
 /**
- * For each exercise, the most recent session before `date`: its day, set
- * count, and best set (heaviest weight; most reps at that weight). This is
- * what "am I improving" compares against.
+ * For each exercise, the most recent session before `date`: its day, every
+ * set in order, and the best set (heaviest weight; most reps at that
+ * weight). This is what "am I improving" compares against.
  */
 export async function lastSessionsBefore(
   db: AppDatabase,
@@ -106,9 +108,11 @@ export async function lastSessionsBefore(
         bestWeightKg: row.weightKg,
         bestReps: row.reps,
         sets: 1,
+        detail: [{ weightKg: row.weightKg, reps: row.reps }],
       });
     } else if (current.date === row.date) {
       current.sets += 1;
+      current.detail.push({ weightKg: row.weightKg, reps: row.reps });
       if (row.weightKg > current.bestWeightKg || (row.weightKg === current.bestWeightKg && row.reps > current.bestReps)) {
         current.bestWeightKg = row.weightKg;
         current.bestReps = row.reps;
@@ -117,4 +121,23 @@ export async function lastSessionsBefore(
     // rows from older dates than the recorded one are ignored — newest wins
   }
   return result;
+}
+
+/**
+ * Add a movement to the catalog. If the name already exists, returns the
+ * existing row instead of failing — creating "Bench Press" twice just finds it.
+ */
+export async function createExercise(
+  db: AppDatabase,
+  name: string,
+  muscleGroup: string,
+): Promise<Exercise> {
+  const inserted = await db
+    .insert(exercises)
+    .values({ name, muscleGroup, sortOrder: 99 })
+    .onConflictDoNothing()
+    .returning();
+  if (inserted.length > 0) return inserted[0];
+  const [existing] = await db.select().from(exercises).where(eq(exercises.name, name)).limit(1);
+  return existing;
 }

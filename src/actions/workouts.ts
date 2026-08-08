@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { db } from '@/db/client';
-import { addSelection, removeSelection, addSet, deleteSet } from '@/db/queries/workouts';
+import { addSelection, removeSelection, addSet, deleteSet, createExercise } from '@/db/queries/workouts';
 import { todayDateString } from '@/lib/dates';
 
 function revalidate() {
@@ -28,5 +28,16 @@ export async function logSetAction(exerciseId: number, weightKg: number, reps: n
 
 export async function deleteSetAction(id: number): Promise<void> {
   await deleteSet(db, id);
+  revalidate();
+}
+
+const MUSCLE_GROUPS = ['chest', 'lats', 'biceps', 'triceps', 'shoulders', 'legs', 'abs'];
+
+/** Create a custom movement and put it straight onto today's session. */
+export async function createExerciseAction(name: string, muscleGroup: string): Promise<void> {
+  const trimmed = name.trim();
+  if (!trimmed || trimmed.length > 80 || !MUSCLE_GROUPS.includes(muscleGroup)) return;
+  const exercise = await createExercise(db, trimmed, muscleGroup);
+  await addSelection(db, todayDateString(), exercise.id);
   revalidate();
 }

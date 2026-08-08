@@ -1,8 +1,11 @@
 import Link from 'next/link';
 import { db } from '@/db/client';
 import { getMonthActivity, type DayActivity } from '@/db/queries/calendar';
+import { getProfile } from '@/db/queries/profile';
+import { listLastNDays, allTimeHighWeight } from '@/db/queries/daily-log';
 import { todayDateString } from '@/lib/dates';
 import { CalendarGrid } from '@/components/calendar/CalendarGrid';
+import { AnalyticsPanel } from '@/components/calendar/AnalyticsPanel';
 import { SheetHeader } from '@/components/ui/SheetHeader';
 import { ArrowLeftGlyph, ArrowRightGlyph } from '@/components/ui/glyphs';
 
@@ -31,7 +34,12 @@ export default async function CalendarPage({
   const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
   const endDate = `${year}-${pad(month)}-${pad(daysInMonth)}`;
 
-  const activityMap = await getMonthActivity(db, startDate, endDate);
+  const [activityMap, profile, yearLogs, athWeight] = await Promise.all([
+    getMonthActivity(db, startDate, endDate),
+    getProfile(db),
+    listLastNDays(db, 365, today),
+    allTimeHighWeight(db),
+  ]);
   const activityByDate: Record<string, DayActivity> = {};
   for (const [date, activity] of activityMap) activityByDate[date] = activity;
 
@@ -69,6 +77,28 @@ export default async function CalendarPage({
       </div>
 
       <CalendarGrid year={year} month={month} activityByDate={activityByDate} today={today} />
+
+      {profile && (
+        <AnalyticsPanel
+          logs={yearLogs.map((l) => ({
+            date: l.date,
+            weightKg: l.weightKg,
+            caloriesKcal: l.caloriesKcal,
+            proteinG: l.proteinG,
+            waterMl: l.waterMl,
+            steps: l.steps,
+          }))}
+          targets={{
+            goalWeightKg: profile.goalWeightKg,
+            dailyCaloriesKcal: profile.dailyCaloriesKcal,
+            dailyProteinG: profile.dailyProteinG,
+            dailyWaterMl: profile.dailyWaterMl,
+            dailySteps: profile.dailySteps,
+          }}
+          athWeight={athWeight}
+          today={today}
+        />
+      )}
     </div>
   );
 }

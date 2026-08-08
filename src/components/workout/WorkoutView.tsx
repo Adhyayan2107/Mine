@@ -8,6 +8,7 @@ import {
   removeExerciseAction,
   logSetAction,
   deleteSetAction,
+  createExerciseAction,
 } from '@/actions/workouts';
 import { SheetHeader } from '@/components/ui/SheetHeader';
 import { SheetModal } from '@/components/ui/SheetModal';
@@ -209,6 +210,15 @@ export function WorkoutView({
               );
             })}
           </div>
+          <NewExerciseForm
+            defaultGroup={relevantGroups[0] ?? 'chest'}
+            onCreate={(name, group) =>
+              startTransition(async () => {
+                await createExerciseAction(name, group);
+                router.refresh();
+              })
+            }
+          />
           <button
             onClick={() => setPicking(false)}
             className="mt-4 w-full bg-route py-3 font-semibold text-route-ink transition-transform active:scale-[0.98]"
@@ -247,6 +257,58 @@ export function WorkoutView({
           </div>
         </SheetModal>
       )}
+    </div>
+  );
+}
+
+/** Add a movement the catalog doesn't have: name + the part it targets. */
+function NewExerciseForm({
+  defaultGroup,
+  onCreate,
+}: {
+  defaultGroup: string;
+  onCreate: (name: string, group: string) => void;
+}) {
+  const [name, setName] = useState('');
+  const [group, setGroup] = useState(defaultGroup);
+
+  function create() {
+    if (!name.trim()) return;
+    onCreate(name.trim(), group);
+    setName('');
+  }
+
+  return (
+    <div className="mt-4 border-t border-hairline pt-4">
+      <p className="map-label mb-1.5">Not in the catalog? Add it</p>
+      <div className="flex gap-2">
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && create()}
+          placeholder="Exercise name"
+          className="min-w-0 flex-1 border border-hairline bg-surface px-3 py-2.5 text-sm text-ink placeholder:text-ink-faint"
+        />
+        <select
+          value={group}
+          onChange={(e) => setGroup(e.target.value)}
+          aria-label="Muscle group"
+          className="border border-hairline bg-surface px-2 py-2.5 text-sm text-ink"
+        >
+          {GROUP_ORDER.map((g) => (
+            <option key={g} value={g}>
+              {g}
+            </option>
+          ))}
+        </select>
+        <button
+          onClick={create}
+          disabled={!name.trim()}
+          className="shrink-0 bg-route px-3.5 py-2.5 text-sm font-semibold text-route-ink transition-transform active:scale-95 disabled:opacity-40"
+        >
+          Add
+        </button>
+      </div>
     </div>
   );
 }
@@ -302,10 +364,19 @@ function ExercisePlate({
           <h2 className="truncate font-medium text-ink">{exercise.name}</h2>
           <p className="mt-0.5 font-mono text-[10px] tracking-[0.12em] text-ink-faint">
             {exercise.muscleGroup.toUpperCase()}
-            {last
-              ? ` · LAST ${last.bestWeightKg}KG × ${last.bestReps} (${last.sets} SETS)`
-              : ' · FIRST ASCENT'}
+            {!last && ' · FIRST ASCENT'}
           </p>
+          {last && (
+            <p className="tabular mt-1 font-mono text-[11px] text-ink-muted">
+              <span className="tracking-[0.1em] text-ink-faint">LAST · {last.date.slice(5)} </span>
+              {last.detail.map((d, i) => (
+                <span key={i}>
+                  {i > 0 && <span className="text-ink-faint"> · </span>}
+                  {d.weightKg}×{d.reps}
+                </span>
+              ))}
+            </p>
+          )}
         </div>
         {trend === 'up' && <TrendUpGlyph className="shrink-0 text-pine" />}
         {trend === 'down' && <TrendDownGlyph className="shrink-0 text-danger" />}

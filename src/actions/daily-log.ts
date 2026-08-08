@@ -10,13 +10,23 @@ export async function logWeightAction(weightKg: number): Promise<void> {
   revalidatePath('/dashboard');
 }
 
-export async function logCaloriesAction(caloriesKcal: number): Promise<void> {
-  await upsertDailyLog(db, todayDateString(), { caloriesKcal: Math.round(caloriesKcal) });
+/** Calories accumulate across the day — each log is a meal, not a total. */
+export async function addCaloriesAction(addKcal: number): Promise<void> {
+  const today = todayDateString();
+  const existing = await getDailyLog(db, today);
+  await upsertDailyLog(db, today, {
+    caloriesKcal: (existing?.caloriesKcal ?? 0) + Math.round(addKcal),
+  });
   revalidatePath('/dashboard');
 }
 
-export async function logProteinAction(proteinG: number): Promise<void> {
-  await upsertDailyLog(db, todayDateString(), { proteinG: Math.round(proteinG) });
+/** Protein accumulates the same way — 80g logged, then 30g, reads 110g. */
+export async function addProteinAction(addG: number): Promise<void> {
+  const today = todayDateString();
+  const existing = await getDailyLog(db, today);
+  await upsertDailyLog(db, today, {
+    proteinG: (existing?.proteinG ?? 0) + Math.round(addG),
+  });
   revalidatePath('/dashboard');
 }
 
