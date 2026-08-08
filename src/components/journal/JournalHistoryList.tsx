@@ -1,18 +1,24 @@
+import { SheetHeader } from '@/components/ui/SheetHeader';
 import type { JournalEntry } from '@/db/schema';
 
 export function JournalHistoryList({ entries }: { entries: JournalEntry[] }) {
   return (
-    <div className="p-4 pb-24">
-      <h1 className="mb-4 font-display text-2xl font-bold text-ink">Journal History</h1>
+    <div className="mx-auto max-w-[720px] p-4 md:p-8">
+      <SheetHeader title="Journal history" sheet="SHEET 05 · LOG" note="Earlier pages of the summit log" />
       {entries.length === 0 ? (
         <p className="text-sm text-ink-faint">No entries yet — your first one starts the trail.</p>
       ) : (
-        <ul className="space-y-3">
+        <ul className="plate divide-y divide-hairline">
           {entries.map((entry) => (
-            <li key={entry.id} className="rounded-xl border border-hairline bg-surface p-4">
-              <p className="mb-1.5 font-mono text-sm font-semibold text-ember">{entry.date}</p>
-              {entry.wins && <p className="text-sm text-ink">Wins: {entry.wins}</p>}
-              {entry.lessons && <p className="mt-0.5 text-sm text-ink-muted">Lessons: {entry.lessons}</p>}
+            <li key={entry.id} className="px-4 py-3.5">
+              <p className="tabular font-mono text-xs font-medium tracking-[0.1em] text-route-deep">
+                {entry.date}
+              </p>
+              {entry.wins && <p className="mt-1.5 text-sm text-ink">Wins — {entry.wins}</p>}
+              {entry.lessons && <p className="mt-1 text-sm text-ink-muted">Lessons — {entry.lessons}</p>}
+              {!entry.wins && !entry.lessons && (
+                <p className="mt-1.5 text-sm text-ink-faint">Signed, nothing noted.</p>
+              )}
             </li>
           ))}
         </ul>

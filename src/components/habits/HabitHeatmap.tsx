@@ -11,7 +11,7 @@ function buildDayList(today: string, days: number): string[] {
 /**
  * Streak visible within whatever window of dates was fetched (e.g. the last
  * 30 days). Undercounts a streak longer than the window — fine for a list
- * view's at-a-glance flame intensity; the habit detail page's `currentStreak`
+ * view's at-a-glance rope length; the habit detail page's `currentStreak`
  * query has no such cap and is the source of truth.
  */
 export function computeVisibleStreak(completedDates: Set<string>, today: string): number {
@@ -24,7 +24,7 @@ export function computeVisibleStreak(completedDates: Set<string>, today: string)
   return streak;
 }
 
-/** Compact single-row strip — last 30 days at a glance, used on the Habits list. */
+/** Compact single-row survey strip — last 30 days at a glance, on the Habits list. */
 export function HabitHeatmapStrip({
   completedDates,
   today,
@@ -34,21 +34,21 @@ export function HabitHeatmapStrip({
 }) {
   const days = buildDayList(today, 30);
   return (
-    <div className="flex gap-[2px]">
+    <div className="flex gap-px border border-hairline bg-hairline">
       {days.map((d) => (
         <span
           key={d}
           title={d}
-          className={`h-2.5 flex-1 rounded-[2px] ${
-            completedDates.has(d) ? 'bg-moss' : 'bg-surface-raised'
-          } ${d === today ? 'ring-1 ring-inset ring-ember' : ''}`}
+          className={`h-2.5 flex-1 ${
+            completedDates.has(d) ? 'bg-pine' : 'bg-surface-sunken'
+          } ${d === today ? 'shadow-[inset_0_0_0_1.5px_var(--color-route)]' : ''}`}
         />
       ))}
     </div>
   );
 }
 
-/** Fuller GitHub-style grid (weeks as columns) — used on a habit's detail page. */
+/** The full survey grid (weeks as columns) — a habit's detail page. */
 export function HabitHeatmapGrid({
   completedDates,
   today,
@@ -65,16 +65,16 @@ export function HabitHeatmapGrid({
   }
 
   return (
-    <div className="flex gap-[3px] overflow-x-auto pb-1">
+    <div className="inline-flex gap-px overflow-x-auto border border-hairline bg-hairline pb-0">
       {columns.map((week, i) => (
-        <div key={i} className="flex flex-col gap-[3px]">
+        <div key={i} className="flex flex-col gap-px">
           {week.map((d) => (
             <span
               key={d}
               title={d}
-              className={`h-3 w-3 rounded-[3px] ${
-                completedDates.has(d) ? 'bg-moss' : 'bg-surface-raised'
-              } ${d === today ? 'ring-1 ring-inset ring-ember' : ''}`}
+              className={`h-3.5 w-3.5 ${
+                completedDates.has(d) ? 'bg-pine' : 'bg-surface-sunken'
+              } ${d === today ? 'shadow-[inset_0_0_0_1.5px_var(--color-route)]' : ''}`}
             />
           ))}
         </div>

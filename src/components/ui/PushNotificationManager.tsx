@@ -47,30 +47,34 @@ export function PushNotificationManager() {
     await unsubscribeFromPushAction(endpoint);
   }
 
-  if (!isSupported) {
-    return (
-      <p className="p-4 text-sm text-ink-faint">Push notifications aren&apos;t supported in this browser.</p>
-    );
-  }
-
   return (
-    <div className="p-4">
-      <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-muted">Notifications</h2>
-      {subscription ? (
+    <section className="plate">
+      <h2 className="map-label border-b border-hairline px-4 py-3">Radio check-ins</h2>
+      {!isSupported ? (
+        <p className="px-4 py-3.5 text-sm text-ink-faint">
+          Push notifications aren&apos;t supported in this browser.
+        </p>
+      ) : subscription ? (
         <button
           onClick={unsubscribe}
-          className="w-full rounded-lg border border-hairline px-4 py-3 font-medium text-ink transition-transform active:scale-[0.98]"
+          className="block w-full px-4 py-3.5 text-left font-medium text-ink transition-colors hover:bg-surface-raised"
         >
-          Disable Notifications
+          Disable notifications
+          <span className="mt-0.5 block text-xs font-normal text-ink-faint">
+            Stops the morning, midday, and evening nudges.
+          </span>
         </button>
       ) : (
         <button
           onClick={subscribe}
-          className="w-full rounded-lg bg-ember px-4 py-3 font-semibold text-ember-ink transition-transform active:scale-[0.98]"
+          className="block w-full px-4 py-3.5 text-left font-medium text-route-deep transition-colors hover:bg-surface-raised"
         >
-          Enable Notifications
+          Enable notifications
+          <span className="mt-0.5 block text-xs font-normal text-ink-faint">
+            Three daily nudges: weight &amp; tasks, water pace, open habits.
+          </span>
         </button>
       )}
-    </div>
+    </section>
   );
 }

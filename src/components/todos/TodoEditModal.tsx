@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { createPortal } from 'react-dom';
 import { createTodoAction, updateTodoAction } from '@/actions/todos';
+import { SheetModal } from '@/components/ui/SheetModal';
 import type { Todo, Category } from '@/db/schema';
 
 const PRIORITIES: Array<{ value: 'low' | 'medium' | 'high'; label: string }> = [
@@ -52,32 +52,29 @@ export function TodoEditModal({
     onSaved();
   }
 
-  return createPortal(
-    <div className="fixed inset-0 z-50 flex items-end bg-black/70 backdrop-blur-sm md:items-center md:justify-center">
-      <div className="modal-enter w-full space-y-4 rounded-t-2xl border border-hairline bg-surface-raised p-6 shadow-2xl md:w-96 md:rounded-2xl">
-        <h2 className="font-display text-lg font-semibold text-ink">{existing ? 'Edit To-Do' : 'New To-Do'}</h2>
-
+  return (
+    <SheetModal title={existing ? 'Edit entry' : 'New entry'} onClose={onClose}>
+      <div className="space-y-4">
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="What needs doing?"
           autoFocus
-          className="w-full rounded-lg border border-hairline bg-surface px-4 py-3 text-ink placeholder:text-ink-faint"
+          className="w-full border border-hairline bg-surface px-4 py-3 text-ink placeholder:text-ink-faint"
         />
 
         <div>
-          <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-ink-muted">
-            Priority
-          </label>
-          <div className="grid grid-cols-3 gap-2">
+          <p className="map-label mb-1.5">Priority</p>
+          <div className="grid grid-cols-3 gap-px border border-hairline bg-hairline">
             {PRIORITIES.map((p) => (
               <button
                 key={p.value}
                 onClick={() => setPriority(p.value)}
-                className={`rounded-lg border py-2 text-sm font-medium transition-colors ${
+                aria-pressed={priority === p.value}
+                className={`py-2.5 text-sm font-medium transition-colors ${
                   priority === p.value
-                    ? 'border-ember bg-ember/15 text-ember'
-                    : 'border-hairline text-ink-muted'
+                    ? 'bg-route text-route-ink'
+                    : 'bg-surface text-ink-muted hover:bg-surface-raised'
                 }`}
               >
                 {p.label}
@@ -87,13 +84,14 @@ export function TodoEditModal({
         </div>
 
         <div>
-          <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-ink-muted">
+          <label htmlFor="todo-category" className="map-label mb-1.5 block">
             Category
           </label>
           <select
+            id="todo-category"
             value={categoryId ?? ''}
             onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : null)}
-            className="w-full rounded-lg border border-hairline bg-surface px-4 py-3 text-ink"
+            className="w-full border border-hairline bg-surface px-4 py-3 text-ink"
           >
             <option value="">No category</option>
             {categories.map((c) => (
@@ -105,34 +103,34 @@ export function TodoEditModal({
         </div>
 
         <div>
-          <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-ink-muted">
+          <label htmlFor="todo-due" className="map-label mb-1.5 block">
             Due date
           </label>
           <input
+            id="todo-due"
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="w-full rounded-lg border border-hairline bg-surface px-4 py-3 text-ink"
+            className="w-full border border-hairline bg-surface px-4 py-3 font-mono text-sm text-ink"
           />
         </div>
 
-        <div className="flex gap-2 pt-2">
+        <div className="flex gap-2 pt-1">
           <button
             onClick={onClose}
-            className="flex-1 rounded-lg border border-hairline py-3 font-medium text-ink-muted transition-transform active:scale-[0.97]"
+            className="flex-1 border border-hairline-strong py-3 font-medium text-ink-muted transition-transform active:scale-[0.98]"
           >
             Cancel
           </button>
           <button
             onClick={save}
             disabled={!title}
-            className="flex-1 rounded-lg bg-ember py-3 font-semibold text-ember-ink transition-transform active:scale-[0.97] disabled:opacity-40"
+            className="flex-1 bg-route py-3 font-semibold text-route-ink transition-transform active:scale-[0.98] disabled:opacity-40"
           >
-            Save
+            {existing ? 'Save' : 'Add to manifest'}
           </button>
         </div>
       </div>
-    </div>,
-    document.body,
+    </SheetModal>
   );
 }

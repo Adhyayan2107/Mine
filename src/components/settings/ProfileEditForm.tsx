@@ -12,6 +12,7 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
   const [dailyProteinG, setDailyProteinG] = useState(profile.dailyProteinG.toString());
   const [dailyWaterMl, setDailyWaterMl] = useState(profile.dailyWaterMl.toString());
   const [dailySteps, setDailySteps] = useState(profile.dailySteps.toString());
+  const [saved, setSaved] = useState(false);
 
   async function save() {
     await updateProfileAction({
@@ -21,24 +22,30 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
       dailyWaterMl: parseInt(dailyWaterMl, 10),
       dailySteps: parseInt(dailySteps, 10),
     });
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
     router.refresh();
   }
 
   return (
-    <div className="space-y-3 p-4">
-      <h1 className="font-display text-xl font-bold text-ink">Profile &amp; Targets</h1>
-      <LabeledInput label="Goal weight (kg)" value={goalWeightKg} onChange={setGoalWeightKg} />
-      <LabeledInput label="Daily calories (kcal)" value={dailyCaloriesKcal} onChange={setDailyCaloriesKcal} />
-      <LabeledInput label="Daily protein (g)" value={dailyProteinG} onChange={setDailyProteinG} />
-      <LabeledInput label="Daily water (ml)" value={dailyWaterMl} onChange={setDailyWaterMl} />
-      <LabeledInput label="Daily steps" value={dailySteps} onChange={setDailySteps} />
-      <button
-        onClick={save}
-        className="w-full rounded-lg bg-ember py-3 font-semibold text-ember-ink transition-transform active:scale-[0.98]"
-      >
-        Save
-      </button>
-    </div>
+    <section className="plate">
+      <h2 className="map-label border-b border-hairline px-4 py-3">Targets</h2>
+      <div className="grid grid-cols-1 gap-px bg-hairline sm:grid-cols-2">
+        <LabeledInput label="Goal weight (kg)" value={goalWeightKg} onChange={setGoalWeightKg} />
+        <LabeledInput label="Daily calories (kcal)" value={dailyCaloriesKcal} onChange={setDailyCaloriesKcal} />
+        <LabeledInput label="Daily protein (g)" value={dailyProteinG} onChange={setDailyProteinG} />
+        <LabeledInput label="Daily water (ml)" value={dailyWaterMl} onChange={setDailyWaterMl} />
+        <LabeledInput label="Daily steps" value={dailySteps} onChange={setDailySteps} />
+        <div className="flex items-end bg-surface p-3">
+          <button
+            onClick={save}
+            className="w-full bg-route py-2.5 font-semibold text-route-ink transition-transform active:scale-[0.98]"
+          >
+            {saved ? 'Saved.' : 'Save targets'}
+          </button>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -51,16 +58,18 @@ function LabeledInput({
   value: string;
   onChange: (v: string) => void;
 }) {
+  const id = `target-${label.toLowerCase().replace(/[^a-z]+/g, '-')}`;
   return (
-    <div>
-      <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-ink-muted">
+    <div className="bg-surface p-3">
+      <label htmlFor={id} className="map-label block">
         {label}
       </label>
       <input
+        id={id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         inputMode="decimal"
-        className="w-full rounded-lg border border-hairline bg-surface px-3 py-2.5 font-mono text-ink"
+        className="tabular mt-1.5 w-full border-b border-hairline-strong bg-transparent pb-1 font-mono text-lg text-ink outline-none focus:border-route"
       />
     </div>
   );

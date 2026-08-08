@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-08T00:00:00Z",
+  "title": "Design System: Adhyayan OS",
+  "extensions": {
+    "colorMeta": {
+      "route": { "role": "primary", "displayName": "Route Orange", "canonical": "#d94b10", "darkValue": "#ff6d2e", "tonalRamp": ["#3a1403", "#6b2506", "#9a3608", "#d94b10", "#e8703d", "#f0946b", "#f7b99c", "#fcdccd"] },
+      "pine": { "role": "secondary", "displayName": "Pine Green", "canonical": "#3c7d4e", "darkValue": "#57a56e", "tonalRamp": ["#0d2114", "#1c4128", "#2b6039", "#3c7d4e", "#57a56e", "#7cc18f", "#a6d8b3", "#d3ecd9"] },
+      "glacier": { "role": "tertiary", "displayName": "Glacier Blue", "canonical": "#4f8fae", "darkValue": "#5f9fc0", "tonalRamp": ["#0e2531", "#1a465c", "#235f7e", "#4f8fae", "#5f9fc0", "#8dc0d8", "#b5d8e7", "#dcedf4"] },
+      "danger": { "role": "error", "displayName": "Danger Red", "canonical": "#b3261e", "darkValue": "#ff6459", "tonalRamp": ["#330a08", "#661411", "#991f19", "#b3261e", "#d24840", "#ff6459", "#ff9a92", "#ffcdc9"] },
+      "ink": { "role": "neutral", "displayName": "Survey Ink", "canonical": "#1c2b26", "darkValue": "#e6ece6", "tonalRamp": ["#1c2b26", "#33443d", "#4e6159", "#5b6a63", "#808f87", "#a3b2aa", "#c6cfc3", "#e6ece6"] },
+      "canvas": { "role": "neutral", "displayName": "Glacier Paper", "canonical": "#e9ede8", "darkValue": "#0f1614", "tonalRamp": ["#0f1614", "#151f1c", "#1b2622", "#98a794", "#c6cfc3", "#dee4dc", "#e9ede8", "#fafbf9"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Sheet Title", "purpose": "Chart masthead voice: page titles (2rem) and modal titles (1.25rem). Barlow Condensed 600, line-height 1." },
+      "altitude": { "displayName": "Altitude Numerals", "purpose": "All large data figures, always tabular-nums; 1.6rem in station rows, up to 3rem in the log input." },
+      "label": { "displayName": "Map Label", "purpose": "Uppercase tracked caps (11px/600/0.09em) — the only heading a plate gets." },
+      "mono": { "displayName": "Coordinates", "purpose": "Chivo Mono 10-11px tracked marginalia: sheet numbers, dates, targets, annotations." }
+    },
+    "shadows": [
+      { "name": "annex", "value": "0 16px 48px -16px rgba(10,20,16,0.5)", "purpose": "The only shadow in the app; SheetModal over an ink/45 scrim. Everything else is flat/tonal." }
+    ],
+    "motion": [
+      { "name": "sheet-enter", "value": "sheet-enter 200ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Modal/sheet entrance: 14px translate-up fade." },
+      { "name": "plant-in", "value": "plant 360ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "The signature waypoint plant: drop from above, one settle. Applied to every completion flag." },
+      { "name": "gauge-fill", "value": "width 300ms", "purpose": "Progress gauge width transitions." },
+      { "name": "press", "value": "transform scale(0.98) on :active", "purpose": "Button press feedback." }
+    ],
+    "breakpoints": [
+      { "name": "md", "value": "768px", "purpose": "Legend column appears; bottom bar hides; station rows go 4-column." },
+      { "name": "lg", "value": "1024px", "purpose": "Dashboard margin column (21rem) splits off." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Route-filled square action; full-width in modals.",
+      "html": "<button class=\"ds-btn-primary\">Log it</button>",
+      "css": ".ds-btn-primary { background: var(--color-route, #d94b10); color: var(--color-route-ink, #261003); font-family: Barlow, sans-serif; font-weight: 600; font-size: 1rem; padding: 12px 24px; border: none; border-radius: 0; cursor: pointer; transition: transform 0.15s; } .ds-btn-primary:active { transform: scale(0.98); } .ds-btn-primary:focus-visible { outline: 2px solid var(--color-route, #d94b10); outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Outlined square action on the paper.",
+      "html": "<button class=\"ds-btn-secondary\">Cancel</button>",
+      "css": ".ds-btn-secondary { background: transparent; color: var(--color-ink-muted, #4e6159); font-family: Barlow, sans-serif; font-weight: 500; font-size: 1rem; padding: 12px 24px; border: 1px solid var(--color-hairline-strong, #98a794); border-radius: 0; cursor: pointer; transition: color 0.15s, transform 0.15s; } .ds-btn-secondary:hover { color: var(--color-ink, #1c2b26); } .ds-btn-secondary:active { transform: scale(0.98); }"
+    },
+    {
+      "name": "Plot Check",
+      "kind": "custom",
+      "refersTo": "plot-check-done",
+      "description": "The world's checkbox: dashed open plot; pine-filled with a planted waypoint flag when secured.",
+      "html": "<span class=\"ds-plot\"></span><span class=\"ds-plot ds-plot-done\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 14 14\" fill=\"none\" aria-hidden=\"true\"><path d=\"M4 1.5v11\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\"/><path d=\"M4 2h7l-2.2 2.5L11 7H4z\" fill=\"currentColor\"/></svg></span>",
+      "css": ".ds-plot { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin-right: 8px; border: 1px dashed var(--color-hairline-strong, #98a794); background: color-mix(in srgb, var(--color-surface-sunken, #dee4dc) 40%, transparent); border-radius: 0; } .ds-plot-done { border: 1px solid var(--color-pine, #3c7d4e); background: var(--color-pine, #3c7d4e); color: var(--color-surface-raised, #fafbf9); }"
+    },
+    {
+      "name": "Station Row",
+      "kind": "custom",
+      "refersTo": "plate",
+      "description": "One data line of the chart table: map-label, altitude reading, 3px gauge, mono annotation.",
+      "html": "<button class=\"ds-station\"><span class=\"ds-station-label\">Protein</span><span class=\"ds-station-reading\"><span class=\"ds-station-value\">142</span><span class=\"ds-station-unit\">/ 180 g</span></span><span class=\"ds-station-gauge\"><span class=\"ds-station-fill\"></span></span><span class=\"ds-station-note\">ON TRACK</span></button>",
+      "css": ".ds-station { display: grid; grid-template-columns: 10.5rem 9rem 1fr auto; align-items: center; gap: 12px; width: 100%; padding: 14px; background: var(--color-surface, #f3f5f1); border: 1px solid var(--color-hairline, #c6cfc3); border-radius: 0; text-align: left; cursor: pointer; transition: background 0.15s; } .ds-station:hover { background: var(--color-surface-raised, #fafbf9); } .ds-station:active { background: var(--color-surface-sunken, #dee4dc); } .ds-station-label { font-family: Barlow, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--color-ink-muted, #4e6159); } .ds-station-reading { display: flex; align-items: baseline; gap: 6px; } .ds-station-value { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 1.6rem; line-height: 1; letter-spacing: 0.01em; font-variant-numeric: tabular-nums; color: var(--color-ink, #1c2b26); } .ds-station-unit { font-family: 'Chivo Mono', monospace; font-size: 11px; color: var(--color-ink-muted, #4e6159); } .ds-station-gauge { display: block; height: 3px; background: var(--color-surface-sunken, #dee4dc); } .ds-station-fill { display: block; height: 100%; width: 79%; background: var(--color-route, #d94b10); } .ds-station-note { font-family: 'Chivo Mono', monospace; font-size: 10px; letter-spacing: 0.08em; color: var(--color-ink-faint, #5b6a63); }"
+    },
+    {
+      "name": "Sheet Header",
+      "kind": "custom",
+      "description": "The masthead every sheet shares: condensed title left, mono sheet coordinates right, one rule beneath.",
+      "html": "<header class=\"ds-sheet-header\"><div><h1 class=\"ds-sheet-title\">Today</h1><p class=\"ds-sheet-note\">Route — day 8 of 31</p></div><p class=\"ds-sheet-coord\">SHEET 01 · 08 AUG 2026</p></header>",
+      "css": ".ds-sheet-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--color-hairline, #c6cfc3); } .ds-sheet-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 2rem; line-height: 1; letter-spacing: 0.01em; color: var(--color-ink, #1c2b26); margin: 0; } .ds-sheet-note { font-family: Barlow, sans-serif; font-size: 0.875rem; color: var(--color-ink-muted, #4e6159); margin: 6px 0 0; } .ds-sheet-coord { font-family: 'Chivo Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: var(--color-ink-faint, #5b6a63); margin: 0; }"
+    },
+    {
+      "name": "Legend Nav Item",
+      "kind": "nav",
+      "description": "Map-legend navigation row: drawn icon, label, mono sheet number; active row is tonally sunken with route ink.",
+      "html": "<a href=\"#\" class=\"ds-nav-item ds-nav-active\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M2 13l4-8 3 5 2-3 3 6z\"/></svg><span class=\"ds-nav-label\">Today</span><span class=\"ds-nav-sheet\">01</span></a><a href=\"#\" class=\"ds-nav-item\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M3 4h10M3 8h10M3 12h7\"/></svg><span class=\"ds-nav-label\">To-Dos</span><span class=\"ds-nav-sheet\">02</span></a>",
+      "css": ".ds-nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 20px; font-family: Barlow, sans-serif; font-size: 0.875rem; font-weight: 500; color: var(--color-ink-muted, #4e6159); text-decoration: none; transition: background 0.15s, color 0.15s; } .ds-nav-item:hover { background: var(--color-surface-raised, #fafbf9); color: var(--color-ink, #1c2b26); } .ds-nav-item svg { color: var(--color-ink-faint, #5b6a63); flex-shrink: 0; } .ds-nav-label { flex: 1; } .ds-nav-sheet { font-family: 'Chivo Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: var(--color-ink-faint, #5b6a63); } .ds-nav-active { background: var(--color-surface-sunken, #dee4dc); color: var(--color-ink, #1c2b26); } .ds-nav-active svg { color: var(--color-route, #d94b10); } .ds-nav-active .ds-nav-sheet { color: var(--color-route-deep, #b03c06); }"
+    },
+    {
+      "name": "Number Log Field",
+      "kind": "input",
+      "description": "The underline quick-log field: altitude numerals over one strong rule, mono unit suffix.",
+      "html": "<div class=\"ds-numfield\"><input class=\"ds-numfield-input\" type=\"number\" placeholder=\"0\" /><span class=\"ds-numfield-unit\">kg</span></div>",
+      "css": ".ds-numfield { display: flex; align-items: baseline; gap: 12px; border-bottom: 1px solid var(--color-hairline-strong, #98a794); padding-bottom: 8px; } .ds-numfield-input { width: 100%; background: transparent; border: none; outline: none; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 3rem; letter-spacing: 0.01em; font-variant-numeric: tabular-nums; color: var(--color-ink, #1c2b26); caret-color: var(--color-route, #d94b10); } .ds-numfield-input::placeholder { color: var(--color-ink-faint, #5b6a63); } .ds-numfield-unit { flex-shrink: 0; font-family: 'Chivo Mono', monospace; font-size: 0.875rem; color: var(--color-ink-muted, #4e6159); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Expedition Atlas",
+    "overview": "The app is one survey atlas: every page is a numbered sheet (01–06) of the same chart. Light mode is the day chart — cool glacier paper over a faint topographic contour ground — and dark mode is the night bivouac chart, the same sheet re-inked in pine-black under a headlamp. Everything sits on square-cornered ruled plates that share hairlines like a map's neatlines, and data reads as a surveyor's chart table, not a pile of metric cards. Three overlay inks each hold one job: route orange acts, pine green secures, glacier blue is water. Completion everywhere is the same gesture — a pennant waypoint flag planted with the plant-in animation.",
+    "keyCharacteristics": [
+      "One chart, many sheets: every page opens with the same masthead grammar (condensed title, mono sheet-number · date coordinate).",
+      "Square corners and single hairlines everywhere; rows share rules instead of owning boxes.",
+      "Condensed altitude numerals, always tabular; tracked mono for coordinates and marginalia.",
+      "Flat paper surfaces over a fixed contour-line ground; one real shadow in the whole app (the modal annex).",
+      "Done = a planted flag, identically across habits, to-dos, and calendar."
+    ],
+    "rules": [
+      { "name": "The Three Inks Rule", "body": "Route acts, pine secures, glacier is water. An accent never borrows another ink's job, and no fourth accent exists.", "section": "colors" },
+      { "name": "The Re-Ink Rule", "body": "Dark mode never introduces new tokens — the .dark block re-inks the same names (accents brighten, paper deepens). New components must theme through the tokens only.", "section": "colors" },
+      { "name": "The One Heading Rule", "body": "The map-label IS the plate's heading. Never stack a second heading, kicker, or eyebrow above or below it.", "section": "typography" },
+      { "name": "The Tabular Figures Rule", "body": "All numerals in tables, gauges, and altitude figures are tabular (font-variant-numeric: tabular-nums); columns of numbers must not shimmy.", "section": "typography" },
+      { "name": "The One Shadow Rule", "body": "No component other than the modal annex casts a shadow. Hover and hierarchy are tonal (surface steps), never lifted.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do open every page with the SheetHeader masthead and a mono SHEET NN · DATE coordinate line.",
+      "Do render every completion as the WaypointFlag planted with plant-in (360ms, cubic-bezier(0.16, 1, 0.3, 1)), and every overlay through SheetModal.",
+      "Do set all large figures in .altitude (Barlow Condensed 600, tabular) with mono unit suffixes.",
+      "Do theme exclusively through the CSS custom properties so .dark re-inks everything for free.",
+      "Do keep motion to the two named animations plus small transform/color transitions, all guarded by the prefers-reduced-motion reset."
+    ],
+    "donts": [
+      "Don't round a corner, add a card shadow, or float a metric in its own hero tile — the refused world is the dark card-grid dashboard with rings and one neon accent.",
+      "Don't let an ink moonlight: route never marks \"done\", pine never marks \"act\", glacier never leaves water/info.",
+      "Don't import icon packages or glyph fonts; icons are drawn stroke SVGs on currentColor.",
+      "Don't pair a map-label with a second heading, kicker, or eyebrow."
+    ]
+  }
+}

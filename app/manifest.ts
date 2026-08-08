@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: 'Personal dashboard, to-dos, habits, and journal.',
     start_url: '/dashboard',
     display: 'standalone',
-    background_color: '#0a0a0a',
-    theme_color: '#0f766e',
+    background_color: '#e9ede8',
+    theme_color: '#d94b10',
     icons: [
       { src: '/icon', sizes: '512x512', type: 'image/png' },
       { src: '/apple-icon', sizes: '180x180', type: 'image/png' },

@@ -6,35 +6,75 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
-  Design system — "training log" direction.
-  Warm charcoal-leather canvas (not neutral gray-black), two accents doing
-  distinct jobs rather than one decorative accent: ember (act now / streak
-  heat / due) and moss (done / confirmed). Every "completed" state across the
-  app — habit checkoffs, calendar days, quick-log saves — renders as the same
-  small stamped square, so the visual language stays consistent everywhere.
+  Design system — "Expedition Route Log" direction.
+
+  The app is one expedition atlas: every page is a sheet of the same survey.
+  Light mode is the day chart (cool glacier paper), dark mode is the night
+  bivouac chart (deep pine-black under a headlamp) — same overlays on both.
+  Accents are the chart's overlay inks, each with one job:
+    route   (high-vis orange) — act now / today / due / the line you're on
+    pine    (survey green)    — secured / done / a camp made
+    glacier (lake blue)       — water / informational overlays
+  Every completed state renders as the same planted waypoint flag (see
+  `plant-in`), so "done" looks and feels identical across the whole atlas.
 */
 @theme {
-  --font-display: var(--font-space-grotesk), sans-serif;
-  --font-sans: var(--font-plex-sans), sans-serif;
-  --font-mono: var(--font-plex-mono), monospace;
+  --font-display: var(--font-barlow-condensed), sans-serif;
+  --font-sans: var(--font-barlow), sans-serif;
+  --font-mono: var(--font-chivo-mono), monospace;
 
-  --color-canvas: #12100e;
-  --color-surface: #1c1815;
-  --color-surface-raised: #241f1b;
-  --color-surface-sunken: #17130f;
-  --color-hairline: #332d27;
-  --color-hairline-strong: #453d34;
-  --color-ink: #f5efe6;
-  --color-ink-muted: #9c9187;
-  --color-ink-faint: #6b6259;
-  --color-ember: #ff6b35;
-  --color-ember-ink: #4a1f0d;
-  --color-moss: #8fbc6b;
-  --color-moss-ink: #1f2b13;
-  --color-danger: #e5484d;
+  /* Day chart */
+  --color-canvas: #e9ede8;
+  --color-surface: #f3f5f1;
+  --color-surface-raised: #fafbf9;
+  --color-surface-sunken: #dee4dc;
+  --color-hairline: #c6cfc3;
+  --color-hairline-strong: #98a794;
+  --color-contour: #d3dbd0;
+  --color-ink: #1c2b26;
+  --color-ink-muted: #4e6159;
+  --color-ink-faint: #5b6a63;
+
+  --color-route: #d94b10;
+  --color-route-deep: #b03c06;
+  --color-route-ink: #261003;
+  --color-pine: #3c7d4e;
+  --color-pine-deep: #2b6039;
+  --color-pine-ink: #0d2114;
+  --color-glacier: #4f8fae;
+  --color-glacier-deep: #235f7e;
+  --color-danger: #b3261e;
+}
+
+/* Night bivouac chart — same tokens, re-inked. Tailwind v4 utilities read
+   these through var(), so redefining them under .dark re-themes everything. */
+.dark {
+  --color-canvas: #0f1614;
+  --color-surface: #151f1c;
+  --color-surface-raised: #1b2622;
+  --color-surface-sunken: #0a100e;
+  --color-hairline: #26332e;
+  --color-hairline-strong: #3c4d45;
+  --color-contour: #1a2420;
+  --color-ink: #e6ece6;
+  --color-ink-muted: #a3b2aa;
+  --color-ink-faint: #808f87;
+
+  --color-route: #ff6d2e;
+  --color-route-deep: #ff8a55;
+  --color-route-ink: #261003;
+  --color-pine: #57a56e;
+  --color-pine-deep: #7cc18f;
+  --color-pine-ink: #0d2114;
+  --color-glacier: #5f9fc0;
+  --color-glacier-deep: #8dc0d8;
+  --color-danger: #ff6459;
 }
 
 html {
+  color-scheme: light;
+}
+html.dark {
   color-scheme: dark;
 }
 
@@ -42,21 +82,85 @@ body {
   background-color: var(--color-canvas);
   color: var(--color-ink);
   font-family: var(--font-sans);
+  /* The survey ground: real contour geometry — two hill groups of nested,
+     irregular closed loops, every third line a heavier index contour, kept
+     inside the tile so the repeat reads as separate hills on the chart. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='720' height='720' viewBox='0 0 720 720'%3E%3Cg fill='none' stroke='%23808f88' stroke-opacity='0.13'%3E%3Cg stroke-width='0.8'%3E%3Cpath d='M212 232c14-20 46-26 66-12s24 42 8 60-50 20-68 4-18-36-6-52z'/%3E%3Cpath d='M188 214c22-32 74-42 106-20s38 68 12 96-80 32-108 6-30-56-10-82z'/%3E%3Cpath d='M142 202c30-48 108-64 156-30s56 100 18 142-118 46-160 8-42-76-14-120z'/%3E%3Cpath d='M96 190c40-64 144-86 208-40s76 132 24 188-158 62-214 12-56-100-18-160z'/%3E%3Cpath d='M528 500c12-16 38-20 54-8s20 34 6 48-40 16-54 2-16-28-6-42z'/%3E%3Cpath d='M506 484c20-26 62-34 88-14s32 56 10 80-66 26-90 4-26-46-8-70z'/%3E%3Cpath d='M470 466c28-38 92-50 130-22s46 82 14 118-98 40-134 8-38-68-10-104z'/%3E%3C/g%3E%3Cg stroke-width='1.6'%3E%3Cpath d='M232 244c10-14 32-18 46-8s16 30 4 42-34 14-46 2-12-24-4-36z'/%3E%3Cpath d='M56 176c48-80 178-108 256-50s94 164 30 234-196 78-264 16-70-124-22-200z'/%3E%3Cpath d='M544 512c8-10 24-12 34-4s12 22 4 30-26 10-34 2-10-18-4-28z'/%3E%3Cpath d='M434 448c36-48 116-64 164-28s58 104 18 148-124 50-168 10-48-84-14-130z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  background-attachment: fixed;
 }
 
 * {
   border-color: var(--color-hairline);
 }
 
+/* ————— Browser surfaces carry the design too ————— */
+
+::selection {
+  background: color-mix(in srgb, var(--color-route) 26%, transparent);
+}
+
+input,
+textarea {
+  caret-color: var(--color-route);
+}
+
 input[type='checkbox'],
 input[type='radio'] {
-  accent-color: var(--color-ember);
+  accent-color: var(--color-route);
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-ember);
+  outline: 2px solid var(--color-route);
   outline-offset: 2px;
-  border-radius: 2px;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-hairline-strong) transparent;
+}
+
+a {
+  text-underline-offset: 3px;
+}
+
+table,
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ————— The atlas's component grammar ————— */
+
+/* A plate: one ruled region of the sheet. Panels share rules like a map's
+   neatlines — square corners, a single hairline, paper surface. */
+.plate {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-hairline);
+}
+
+/* A map label: the small tracked caps used for station names, sheet titles
+   and marginalia. This IS the heading — never pair it with a second one. */
+.map-label {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+
+/* Sheet title: the big condensed display voice, like a chart masthead. */
+.sheet-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* Altitude numerals: large condensed figures, always tabular. */
+.altitude {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -67,37 +171,37 @@ input[type='radio'] {
   }
 }
 
-@keyframes modal-enter {
+@keyframes sheet-enter {
   from {
     opacity: 0;
-    transform: translateY(12px) scale(0.98);
+    transform: translateY(14px);
   }
   to {
     opacity: 1;
+    transform: translateY(0);
+  }
+}
+.sheet-enter {
+  animation: sheet-enter 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* The waypoint plant — the atlas's one signature motion. Every completed
+   mark (habit checkoff, to-do, calendar camp) plants its flag with this:
+   dropped in from above, one settle, done. */
+@keyframes plant {
+  0% {
+    transform: translateY(-6px) scale(1.25);
+    opacity: 0;
+  }
+  55% {
+    transform: translateY(1px) scale(0.96);
+    opacity: 1;
+  }
+  100% {
     transform: translateY(0) scale(1);
   }
 }
-.modal-enter {
-  animation: modal-enter 180ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* The "stamp" — the app's one signature interaction. Every completed mark
-   (habit checkoff, calendar day, heatmap cell) plays this on the moment it
-   fills in, so "done" always feels and looks the same across the app. */
-@keyframes stamp {
-  0% {
-    transform: scale(1);
-  }
-  35% {
-    transform: scale(1.18) rotate(-4deg);
-  }
-  60% {
-    transform: scale(0.95) rotate(2deg);
-  }
-  100% {
-    transform: scale(1) rotate(0deg);
-  }
-}
-.stamp-in {
-  animation: stamp 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+.plant-in {
+  /* The settle is authored in the keyframes; the easing stays a clean ease-out. */
+  animation: plant 360ms cubic-bezier(0.16, 1, 0.3, 1);
 }

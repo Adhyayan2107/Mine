@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { saveJournalEntryAction } from '@/actions/journal';
+import { SheetHeader } from '@/components/ui/SheetHeader';
 import type { JournalEntry } from '@/db/schema';
 
 export function JournalForm({ entry }: { entry: JournalEntry | null }) {
@@ -15,62 +16,101 @@ export function JournalForm({ entry }: { entry: JournalEntry | null }) {
   const [mood, setMood] = useState<number | null>(entry?.mood ?? null);
   const [energy, setEnergy] = useState<number | null>(entry?.energy ?? null);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   async function save() {
     setSaving(true);
     await saveJournalEntryAction({ morningPlan, wins, lessons, tomorrowFocus, mood, energy });
     setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
     router.refresh();
   }
 
   return (
-    <div className="space-y-5 p-4 pb-24">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-2xl font-bold text-ink">Journal</h1>
-          <p className="text-sm text-ink-muted">Today&apos;s entry</p>
+    <div className="mx-auto max-w-[720px] p-4 md:p-8">
+      <SheetHeader
+        title="Journal"
+        sheet="SHEET 05"
+        note="Today's page of the summit log"
+        action={
+          <Link
+            href="/journal/history"
+            className="border border-hairline-strong px-3 py-1.5 text-xs font-medium text-ink-muted transition-colors hover:text-ink"
+          >
+            History
+          </Link>
+        }
+      />
+
+      {/* One logbook page: entries share rules instead of floating apart. */}
+      <div className="plate divide-y divide-hairline">
+        <LogEntry
+          label="Morning plan"
+          placeholder="What does today's leg look like?"
+          value={morningPlan}
+          onChange={setMorningPlan}
+        />
+        <LogEntry label="Wins" placeholder="What went right today?" value={wins} onChange={setWins} />
+        <LogEntry
+          label="Lessons"
+          placeholder="What did the mountain teach you?"
+          value={lessons}
+          onChange={setLessons}
+        />
+        <LogEntry
+          label="Tomorrow's focus"
+          placeholder="The first move tomorrow morning."
+          value={tomorrowFocus}
+          onChange={setTomorrowFocus}
+        />
+        <div className="grid grid-cols-1 divide-y divide-hairline sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+          <TickScale label="Mood" value={mood} onChange={setMood} />
+          <TickScale label="Energy" value={energy} onChange={setEnergy} />
         </div>
-        <Link href="/journal/history" className="text-sm font-medium text-ember">
-          History
-        </Link>
       </div>
-
-      <Field label="Morning plan" value={morningPlan} onChange={setMorningPlan} />
-      <Field label="Wins" value={wins} onChange={setWins} />
-      <Field label="Lessons" value={lessons} onChange={setLessons} />
-      <Field label="Tomorrow's focus" value={tomorrowFocus} onChange={setTomorrowFocus} />
-
-      <RatingField label="Mood" value={mood} onChange={setMood} />
-      <RatingField label="Energy" value={energy} onChange={setEnergy} />
 
       <button
         onClick={save}
         disabled={saving}
-        className="w-full rounded-lg bg-ember py-3.5 font-semibold text-ember-ink transition-transform active:scale-[0.98] disabled:opacity-40"
+        className="mt-4 w-full bg-route py-3.5 font-semibold text-route-ink transition-transform active:scale-[0.99] disabled:opacity-40"
       >
-        {saving ? 'Saving…' : 'Save entry'}
+        {saving ? 'Writing it in…' : saved ? 'Logged.' : 'Sign the log'}
       </button>
     </div>
   );
 }
 
-function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+function LogEntry({
+  label,
+  placeholder,
+  value,
+  onChange,
+}: {
+  label: string;
+  placeholder: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const id = `journal-${label.toLowerCase().replace(/[^a-z]+/g, '-')}`;
   return (
-    <div>
-      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-muted">
+    <div className="px-4 py-3.5">
+      <label htmlFor={id} className="map-label block">
         {label}
       </label>
       <textarea
+        id={id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={2}
-        className="w-full rounded-lg border border-hairline bg-surface px-3 py-2.5 text-ink placeholder:text-ink-faint"
+        placeholder={placeholder}
+        className="mt-1.5 w-full resize-y bg-transparent text-[15px] leading-relaxed text-ink outline-none placeholder:text-ink-faint"
       />
     </div>
   );
 }
 
-function RatingField({
+function TickScale({
   label,
   value,
   onChange,
@@ -80,17 +120,19 @@ function RatingField({
   onChange: (v: number) => void;
 }) {
   return (
-    <div>
-      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-muted">
-        {label}
-      </label>
-      <div className="flex gap-2">
+    <div className="px-4 py-3.5">
+      <p className="map-label">{label}</p>
+      <div className="mt-2 grid grid-cols-5 gap-px border border-hairline bg-hairline" role="radiogroup" aria-label={label}>
         {[1, 2, 3, 4, 5].map((n) => (
           <button
             key={n}
+            role="radio"
+            aria-checked={value === n}
             onClick={() => onChange(n)}
-            className={`h-11 w-11 rounded-full border-2 font-mono font-semibold transition-transform active:scale-90 ${
-              value === n ? 'border-ember bg-ember/15 text-ember' : 'border-hairline text-ink-muted'
+            className={`altitude py-2.5 text-lg transition-colors ${
+              value === n
+                ? 'bg-route text-route-ink'
+                : 'bg-surface text-ink-muted hover:bg-surface-raised'
             }`}
           >
             {n}

@@ -28,38 +28,45 @@ export function DataPortabilitySection() {
   }
 
   return (
-    <div className="space-y-2 p-4">
-      <h2 className="mb-1 text-xs font-semibold uppercase tracking-wide text-ink-muted">Your data</h2>
-      <button
-        onClick={handleExport}
-        className="w-full rounded-lg border border-hairline px-4 py-3 text-left font-medium text-ink transition-transform active:scale-[0.98]"
-      >
-        Export Data
-      </button>
+    <section className="plate">
+      <h2 className="map-label border-b border-hairline px-4 py-3">Your data</h2>
+      <div className="divide-y divide-hairline">
+        <button
+          onClick={handleExport}
+          className="block w-full px-4 py-3.5 text-left font-medium text-ink transition-colors hover:bg-surface-raised"
+        >
+          Export the whole log
+          <span className="mt-0.5 block text-xs font-normal text-ink-faint">Everything, as one JSON file.</span>
+        </button>
 
-      <button
-        onClick={() => fileInputRef.current?.click()}
-        className="w-full rounded-lg border border-hairline px-4 py-3 text-left font-medium text-ink transition-transform active:scale-[0.98]"
-      >
-        Import Data
-      </button>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="application/json"
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) handleImportFile(file);
-        }}
-      />
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="block w-full px-4 py-3.5 text-left font-medium text-ink transition-colors hover:bg-surface-raised"
+        >
+          Import a log
+          <span className="mt-0.5 block text-xs font-normal text-ink-faint">Restores from a previous export.</span>
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="application/json"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) handleImportFile(file);
+          }}
+        />
 
-      <button
-        onClick={() => setResetOpen(true)}
-        className="w-full rounded-lg border border-danger/40 px-4 py-3 text-left font-medium text-danger transition-transform active:scale-[0.98]"
-      >
-        Reset All Data
-      </button>
+        <button
+          onClick={() => setResetOpen(true)}
+          className="block w-full px-4 py-3.5 text-left font-medium text-danger transition-colors hover:bg-surface-raised"
+        >
+          Reset all data
+          <span className="mt-0.5 block text-xs font-normal text-ink-faint">
+            Burns the whole atlas and starts blank. Asks first.
+          </span>
+        </button>
+      </div>
 
       <ConfirmTypeDialog
         open={resetOpen}
@@ -73,6 +80,6 @@ export function DataPortabilitySection() {
           router.refresh();
         }}
       />
-    </div>
+    </section>
   );
 }

@@ -3,6 +3,8 @@ import { db } from '@/db/client';
 import { getMonthActivity, type DayActivity } from '@/db/queries/calendar';
 import { todayDateString } from '@/lib/dates';
 import { CalendarGrid } from '@/components/calendar/CalendarGrid';
+import { SheetHeader } from '@/components/ui/SheetHeader';
+import { ArrowLeftGlyph, ArrowRightGlyph } from '@/components/ui/glyphs';
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -39,27 +41,30 @@ export default async function CalendarPage({
   const nextYear = month === 12 ? year + 1 : year;
 
   return (
-    <div className="p-4 pb-24">
-      <h1 className="mb-1 font-display text-2xl font-bold text-ink">Calendar</h1>
-      <p className="mb-5 text-sm text-ink-muted">Every day you showed up leaves a mark.</p>
+    <div className="mx-auto max-w-[880px] p-4 md:p-8">
+      <SheetHeader
+        title="Calendar"
+        sheet="SHEET 04"
+        note="Every day you showed up is a camp on the route."
+      />
 
       <div className="mb-4 flex items-center justify-between">
         <Link
           href={`/calendar?year=${prevYear}&month=${prevMonth}`}
-          className="rounded-lg border border-hairline px-3 py-1.5 text-ink-muted"
+          className="flex h-9 w-9 items-center justify-center border border-hairline-strong text-ink-muted transition-colors hover:text-ink"
           aria-label="Previous month"
         >
-          ←
+          <ArrowLeftGlyph size={14} />
         </Link>
-        <p className="font-display font-semibold text-ink">
+        <p className="sheet-title text-xl text-ink">
           {MONTH_NAMES[month - 1]} {year}
         </p>
         <Link
           href={`/calendar?year=${nextYear}&month=${nextMonth}`}
-          className="rounded-lg border border-hairline px-3 py-1.5 text-ink-muted"
+          className="flex h-9 w-9 items-center justify-center border border-hairline-strong text-ink-muted transition-colors hover:text-ink"
           aria-label="Next month"
         >
-          →
+          <ArrowRightGlyph size={14} />
         </Link>
       </div>
 

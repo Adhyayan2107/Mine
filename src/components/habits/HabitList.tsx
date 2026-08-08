@@ -6,6 +6,9 @@ import Link from 'next/link';
 import { toggleHabitTodayAction } from '@/actions/habits';
 import { HabitEditModal } from './HabitEditModal';
 import { HabitHeatmapStrip, computeVisibleStreak } from './HabitHeatmap';
+import { SheetHeader } from '@/components/ui/SheetHeader';
+import { PlotCheck } from '@/components/ui/Waypoint';
+import { PlusGlyph } from '@/components/ui/glyphs';
 import type { Habit } from '@/db/schema';
 
 export function HabitList({
@@ -37,70 +40,71 @@ export function HabitList({
   const doneCount = habits.filter((h) => optimistic[h.id] ?? completedSet.has(h.id)).length;
 
   return (
-    <div className="p-4 pb-24">
-      <div className="mb-5">
-        <h1 className="font-display text-2xl font-bold text-ink">Habits</h1>
-        <p className="text-sm text-ink-muted">
-          {doneCount} of {habits.length} stamped today
-        </p>
-        <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-surface">
-          <div
-            className="h-full rounded-full bg-moss transition-all"
-            style={{ width: `${habits.length ? (doneCount / habits.length) * 100 : 0}%` }}
-          />
-        </div>
+    <div className="mx-auto max-w-[880px] p-4 pb-44 md:p-8 md:pb-28">
+      <SheetHeader
+        title="Habits"
+        sheet="SHEET 03"
+        note={`${doneCount} of ${habits.length} ropes secured today`}
+      />
+
+      <div className="mb-4 h-[3px] w-full bg-surface-sunken">
+        <div
+          className="h-full bg-pine transition-[width] duration-300"
+          style={{ width: `${habits.length ? (doneCount / habits.length) * 100 : 0}%` }}
+        />
       </div>
 
-      <ul className="space-y-2">
-        {habits.map((habit) => {
-          const isDone = optimistic[habit.id] ?? completedSet.has(habit.id);
-          const dates = new Set(recentCompletions[habit.id] ?? []);
-          if (isDone) dates.add(today);
-          const streak = computeVisibleStreak(dates, today);
+      {habits.length === 0 ? (
+        <div className="plate mt-8 p-8 text-center">
+          <p className="sheet-title text-lg text-ink">No ropes fixed yet</p>
+          <p className="mt-1 text-sm text-ink-muted">Add the first habit to start a line up the face.</p>
+        </div>
+      ) : (
+        <ul className="plate divide-y divide-hairline">
+          {habits.map((habit) => {
+            const isDone = optimistic[habit.id] ?? completedSet.has(habit.id);
+            const dates = new Set(recentCompletions[habit.id] ?? []);
+            if (isDone) dates.add(today);
+            else dates.delete(today);
+            const streak = computeVisibleStreak(dates, today);
 
-          return (
-            <li key={habit.id} className="rounded-xl border border-hairline bg-surface p-3">
-              <div className="flex items-center gap-3">
+            return (
+              <li key={habit.id} className="flex items-center gap-3 px-3 py-3 md:px-4">
                 <button
                   onClick={() => toggle(habit)}
-                  aria-label={isDone ? 'Mark not done' : 'Mark done'}
-                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 text-xl font-bold transition-transform active:scale-90 ${
-                    isDone
-                      ? 'stamp-in border-moss bg-moss/20 text-moss'
-                      : 'border-hairline-strong text-transparent'
-                  }`}
+                  aria-label={isDone ? `Mark ${habit.name} not done` : `Mark ${habit.name} done`}
+                  className="shrink-0 transition-transform active:scale-90"
                 >
-                  ✓
+                  <PlotCheck done={isDone} size="lg" />
                 </button>
 
                 <Link href={`/habits/${habit.id}`} className="min-w-0 flex-1">
                   <p className="truncate font-medium text-ink">{habit.name}</p>
-                  <div className="mt-1.5">
+                  <div className="mt-2">
                     <HabitHeatmapStrip completedDates={dates} today={today} />
                   </div>
                 </Link>
 
                 {streak > 0 && (
-                  <div
-                    className="flex shrink-0 flex-col items-center rounded-lg px-2 py-1"
-                    style={{ opacity: 0.5 + Math.min(streak / 14, 1) * 0.5 }}
-                  >
-                    <span className="text-lg leading-none">🔥</span>
-                    <span className="font-mono text-xs font-semibold text-ember">{streak}</span>
+                  <div className="shrink-0 text-right">
+                    <p className={`altitude text-xl leading-none ${streak >= 7 ? 'text-route' : 'text-pine-deep'}`}>
+                      {streak}
+                    </p>
+                    <p className="mt-0.5 font-mono text-[10px] tracking-[0.14em] text-ink-faint">ON ROPE</p>
                   </div>
                 )}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+              </li>
+            );
+          })}
+        </ul>
+      )}
 
       <button
         onClick={() => setCreating(true)}
-        className="fixed bottom-24 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-ember text-2xl font-semibold text-ember-ink shadow-lg transition-transform active:scale-90 md:bottom-6"
+        className="fixed bottom-24 right-4 flex h-14 w-14 items-center justify-center bg-route text-route-ink shadow-[0_10px_28px_-8px_rgba(120,40,5,0.55)] transition-transform active:scale-90 md:bottom-8 md:right-8"
         aria-label="Add habit"
       >
-        +
+        <PlusGlyph size={22} />
       </button>
 
       <HabitEditModal

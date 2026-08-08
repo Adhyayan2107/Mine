@@ -2,34 +2,36 @@
 
 import { useRouter } from 'next/navigation';
 import { setDashboardWidgetEnabledAction, moveDashboardWidgetAction } from '@/actions/dashboard-widgets';
+import { SheetHeader } from '@/components/ui/SheetHeader';
+import { ChevronUpGlyph, ChevronDownGlyph } from '@/components/ui/glyphs';
 import type { DashboardWidgetConfig } from '@/db/schema';
 
 const WIDGET_LABELS: Record<string, string> = {
-  todaysWeight: "Today's Weight",
+  todaysWeight: 'Weight',
   todaysWorkout: "Today's Workout",
-  caloriesRemaining: 'Calories Remaining',
-  proteinProgress: 'Protein Progress',
-  waterIntake: 'Water Intake',
-  habitCompletion: 'Habit Completion',
-  tasksRemaining: 'Tasks Remaining',
-  weeklyWeightGraph: 'Weekly Weight Graph',
+  caloriesRemaining: 'Calories Left',
+  proteinProgress: 'Protein',
+  waterIntake: 'Water',
+  habitCompletion: 'Habits Secured',
+  tasksRemaining: 'Tasks Due',
+  weeklyWeightGraph: 'Weight Profile',
   workoutStreak: 'Workout Streak',
-  currentGoal: 'Current Goal',
+  currentGoal: 'Summit Goal',
 };
 
 export function WidgetSettingsList({ widgets }: { widgets: DashboardWidgetConfig[] }) {
   const router = useRouter();
 
   return (
-    <div className="p-4">
-      <h1 className="mb-1 font-display text-xl font-bold text-ink">Dashboard Widgets</h1>
-      <p className="mb-4 text-sm text-ink-muted">Reorder or hide what shows up on Today.</p>
-      <ul className="space-y-2">
+    <div className="mx-auto max-w-[720px] p-4 md:p-8">
+      <SheetHeader
+        title="Arrange the sheet"
+        sheet="SHEET 01 · A"
+        note="Reorder or hide the stations on Today."
+      />
+      <ul className="plate divide-y divide-hairline">
         {widgets.map((widget, i) => (
-          <li
-            key={widget.id}
-            className="flex items-center gap-3 rounded-xl border border-hairline bg-surface p-3"
-          >
+          <li key={widget.id} className="flex items-center gap-3 px-3 py-2.5 md:px-4">
             <div className="flex flex-col">
               <button
                 disabled={i === 0}
@@ -37,10 +39,10 @@ export function WidgetSettingsList({ widgets }: { widgets: DashboardWidgetConfig
                   await moveDashboardWidgetAction(widget.id, 'up');
                   router.refresh();
                 }}
-                aria-label="Move up"
-                className="px-1 text-ink-muted disabled:opacity-30"
+                aria-label={`Move ${WIDGET_LABELS[widget.widgetKey] ?? widget.widgetKey} up`}
+                className="px-1 py-0.5 text-ink-muted transition-colors hover:text-ink disabled:opacity-30"
               >
-                ▲
+                <ChevronUpGlyph size={13} />
               </button>
               <button
                 disabled={i === widgets.length - 1}
@@ -48,13 +50,15 @@ export function WidgetSettingsList({ widgets }: { widgets: DashboardWidgetConfig
                   await moveDashboardWidgetAction(widget.id, 'down');
                   router.refresh();
                 }}
-                aria-label="Move down"
-                className="px-1 text-ink-muted disabled:opacity-30"
+                aria-label={`Move ${WIDGET_LABELS[widget.widgetKey] ?? widget.widgetKey} down`}
+                className="px-1 py-0.5 text-ink-muted transition-colors hover:text-ink disabled:opacity-30"
               >
-                ▼
+                <ChevronDownGlyph size={13} />
               </button>
             </div>
-            <span className="flex-1 text-ink">{WIDGET_LABELS[widget.widgetKey] ?? widget.widgetKey}</span>
+            <span className="flex-1 font-medium text-ink">
+              {WIDGET_LABELS[widget.widgetKey] ?? widget.widgetKey}
+            </span>
             <input
               type="checkbox"
               checked={widget.isEnabled}
@@ -62,7 +66,8 @@ export function WidgetSettingsList({ widgets }: { widgets: DashboardWidgetConfig
                 await setDashboardWidgetEnabledAction(widget.id, e.target.checked);
                 router.refresh();
               }}
-              className="h-6 w-6"
+              aria-label={`Show ${WIDGET_LABELS[widget.widgetKey] ?? widget.widgetKey}`}
+              className="h-5 w-5"
             />
           </li>
         ))}

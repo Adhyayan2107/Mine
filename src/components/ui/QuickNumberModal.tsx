@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { createPortal } from 'react-dom';
+import { SheetModal } from './SheetModal';
 
 export function QuickNumberModal({
   open,
@@ -31,40 +31,40 @@ export function QuickNumberModal({
 
   if (!open) return null;
 
-  return createPortal(
-    <div className="fixed inset-0 z-50 flex items-end bg-black/70 backdrop-blur-sm md:items-center md:justify-center">
-      <div className="modal-enter w-full rounded-t-2xl border border-hairline bg-surface-raised p-6 shadow-2xl md:w-96 md:rounded-2xl">
-        <h2 className="mb-4 font-display text-lg font-semibold text-ink">{title}</h2>
-        <div className="mb-5 flex items-baseline gap-2">
-          <input
-            type="number"
-            inputMode="decimal"
-            autoFocus
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            className="w-full rounded-lg border border-hairline bg-surface px-4 py-3.5 font-mono text-2xl text-ink"
-          />
-          <span className="shrink-0 font-mono text-sm text-ink-muted">{unit}</span>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={onClose}
-            className="flex-1 rounded-lg border border-hairline py-3 font-medium text-ink-muted transition-transform active:scale-[0.97]"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={() => {
-              const parsed = parseFloat(value);
-              if (!Number.isNaN(parsed)) onSubmit(parsed);
-            }}
-            className="flex-1 rounded-lg bg-ember py-3 font-semibold text-ember-ink transition-transform active:scale-[0.97]"
-          >
-            Save
-          </button>
-        </div>
+  function save() {
+    const parsed = parseFloat(value);
+    if (!Number.isNaN(parsed)) onSubmit(parsed);
+  }
+
+  return (
+    <SheetModal title={title} onClose={onClose}>
+      <div className="mb-5 flex items-baseline gap-3 border-b border-hairline-strong pb-2">
+        <input
+          type="number"
+          inputMode="decimal"
+          autoFocus
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && save()}
+          placeholder="0"
+          className="altitude w-full bg-transparent text-5xl text-ink outline-none placeholder:text-ink-faint"
+        />
+        <span className="shrink-0 font-mono text-sm text-ink-muted">{unit}</span>
       </div>
-    </div>,
-    document.body,
+      <div className="flex gap-2">
+        <button
+          onClick={onClose}
+          className="flex-1 border border-hairline-strong py-3 font-medium text-ink-muted transition-transform active:scale-[0.98]"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={save}
+          className="flex-1 bg-route py-3 font-semibold text-route-ink transition-transform active:scale-[0.98]"
+        >
+          Log it
+        </button>
+      </div>
+    </SheetModal>
   );
 }

@@ -13,14 +13,13 @@ export default function Icon() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#0f766e',
-          color: 'white',
-          fontSize: 260,
-          fontWeight: 700,
-          fontFamily: 'sans-serif',
+          background: '#d94b10',
         }}
       >
-        A
+        <svg width="320" height="320" viewBox="0 0 14 14" fill="none">
+          <path d="M4 1.5v11" stroke="#261003" strokeWidth="1.6" strokeLinecap="round" />
+          <path d="M4 2h7l-2.2 2.5L11 7H4z" fill="#261003" />
+        </svg>
       </div>
     ),
     { ...size },
