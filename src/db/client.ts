@@ -1,36 +1,27 @@
-import postgres from 'postgres';
-import { drizzle } from 'drizzle-orm/postgres-js';
+import { Pool } from 'pg';
+import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schema from './schema';
 import type { AppDatabase } from './types';
 
-// `prepare: false` is required when POSTGRES_URL points at a PgBouncer-style
-// pooler in transaction mode (e.g. Supabase's pooled connection on port
-// 6543) — prepared statements don't survive across pooled connections since
-// each query can land on a different backend. Harmless against a direct
-// (non-pooled) connection too, so this is safe either way.
-// The timeouts matter as much as `prepare` on serverless: without them the
-// client holds idle sockets open forever, the pooler/NAT silently kills
-// them, and the next request reuses a dead connection and hangs with no
-// error — the classic "works right after deploy, infinite spinner later".
+// node-postgres (pg), not postgres.js. postgres.js kept hanging against
+// Supabase's Supavisor transaction pooler — queries stuck until the function
+// timed out, reproduced across two projects/regions in both concurrent and
+// serial modes. pg never pipelines, checks one query out per connection, and
+// is the driver Supabase's own docs pair with the pooler.
 //
-// `max_pipeline: 1` is load-bearing against Supavisor/PgBouncer transaction
-// pooling: postgres.js pipelines concurrent queries onto one socket (default
-// allows 100 in flight), and the pooler stops responding to pipelined
-// extended-protocol traffic — reproduced as the dashboard's Promise.all burst
-// hanging until the function timed out while sequential pages worked fine.
-// One query in flight per socket at a time; parallelism comes from `max`.
-const queryClient = postgres(process.env.POSTGRES_URL!, {
-  prepare: false,
-  // ponytail: strictly serial — one socket, one query in flight. The only mode
-  // that never hung against Supavisor in testing; costs ~2ms/query when the
-  // function and database share a region. Raise max only with evidence that
-  // concurrent sockets through this pooler are reliable.
-  max: 1,
-  // Runtime-supported but missing from postgres.js's published types.
-  ...({ max_pipeline: 1 } as object),
-  idle_timeout: 20, // seconds; release idle sockets before the pooler reaps them
-  connect_timeout: 10, // seconds; fail fast instead of hanging the page
-  max_lifetime: 60 * 30, // recycle sockets half-hourly so none rot
+// query_timeout is the backstop: if the pooler ever eats a query anyway, the
+// page gets an error in 15s instead of a 60s gateway timeout.
+const pool = new Pool({
+  connectionString: process.env.POSTGRES_URL,
+  max: 3,
+  idleTimeoutMillis: 20_000, // release idle sockets before the pooler reaps them
+  connectionTimeoutMillis: 10_000, // fail fast on connect instead of hanging
+  query_timeout: 15_000,
+  maxLifetimeSeconds: 60 * 30, // recycle sockets half-hourly so none rot
+  // Supabase's pooler presents a self-signed chain; encrypt without CA
+  // verification, per Supabase's own pg guidance. Local non-TLS dev
+  // connections (localhost) skip ssl entirely.
+  ssl: process.env.POSTGRES_URL?.includes('localhost') ? undefined : { rejectUnauthorized: false },
 });
 
-export const db: AppDatabase = drizzle(queryClient, { schema });
+export const db: AppDatabase = drizzle(pool, { schema });
