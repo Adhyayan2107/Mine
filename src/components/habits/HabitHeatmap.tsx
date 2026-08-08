@@ -48,15 +48,21 @@ export function HabitHeatmapStrip({
   );
 }
 
-/** The full survey grid (weeks as columns) — a habit's detail page. */
+/**
+ * The full survey grid (weeks as columns) — a habit's detail page. With
+ * `onToggle` the plots become buttons: tap any past day to plant or pull
+ * that day's flag (retroactive edits).
+ */
 export function HabitHeatmapGrid({
   completedDates,
   today,
   weeks = 14,
+  onToggle,
 }: {
   completedDates: Set<string>;
   today: string;
   weeks?: number;
+  onToggle?: (date: string) => void;
 }) {
   const days = buildDayList(today, weeks * 7);
   const columns: string[][] = [];
@@ -68,15 +74,23 @@ export function HabitHeatmapGrid({
     <div className="inline-flex gap-px overflow-x-auto border border-hairline bg-hairline pb-0">
       {columns.map((week, i) => (
         <div key={i} className="flex flex-col gap-px">
-          {week.map((d) => (
-            <span
-              key={d}
-              title={d}
-              className={`h-3.5 w-3.5 ${
-                completedDates.has(d) ? 'bg-pine' : 'bg-surface-sunken'
-              } ${d === today ? 'shadow-[inset_0_0_0_1.5px_var(--color-route)]' : ''}`}
-            />
-          ))}
+          {week.map((d) => {
+            const done = completedDates.has(d);
+            const cellClass = `h-3.5 w-3.5 ${done ? 'bg-pine' : 'bg-surface-sunken'} ${
+              d === today ? 'shadow-[inset_0_0_0_1.5px_var(--color-route)]' : ''
+            }`;
+            return onToggle ? (
+              <button
+                key={d}
+                title={d}
+                aria-label={`${d}: ${done ? 'planted — tap to remove' : 'not planted — tap to plant'}`}
+                onClick={() => onToggle(d)}
+                className={`${cellClass} transition-transform hover:scale-125 active:scale-90`}
+              />
+            ) : (
+              <span key={d} title={d} className={cellClass} />
+            );
+          })}
         </div>
       ))}
     </div>

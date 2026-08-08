@@ -55,6 +55,8 @@ export const todos = pgTable('todos', {
   title: text('title').notNull(),
   notes: text('notes'),
   dueDate: date('due_date', { mode: 'string' }),
+  // "HH:MM"; null means due by end of the due date.
+  dueTime: text('due_time'),
   priority: text('priority').notNull().default('medium'),
   categoryId: integer('category_id').references(() => categories.id),
   isCompleted: boolean('is_completed').notNull().default(false),

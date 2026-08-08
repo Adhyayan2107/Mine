@@ -2,19 +2,22 @@ import { WaypointFlag } from '@/components/ui/Waypoint';
 
 /**
  * The month as an ascent. One line climbs from the 1st to the last day;
- * every day you logged something is a camp on the line, today carries the
- * flag, and the unclimbed remainder is dashed. This is the first thing the
- * sheet says: where you are on the route.
+ * every day you logged something is a camp on the line, a day where you
+ * logged EVERYTHING (weight, workout, habits, journal) gets its own planted
+ * pine flag, today carries the route flag, and the unclimbed remainder is
+ * dashed. This is the first thing the sheet says: where you are on the route.
  */
 export function RouteStrip({
   daysInMonth,
   todayDay,
   activeDays,
+  fullDays,
   monthLabel,
 }: {
   daysInMonth: number;
   todayDay: number;
   activeDays: Set<number>;
+  fullDays: Set<number>;
   monthLabel: string;
 }) {
   const W = 640;
@@ -47,12 +50,21 @@ export function RouteStrip({
         <path d={toPath(ahead)} fill="none" stroke="var(--color-hairline-strong)" strokeWidth="1.5" strokeDasharray="3 5" />
         {/* the route behind — climbed */}
         <path d={toPath(climbed)} fill="none" stroke="var(--color-route)" strokeWidth="2" strokeLinecap="round" />
-        {/* camps: days with something logged */}
+        {/* camps: days with something logged; full-log days plant a flag */}
         {pts
           .filter((p) => p.day !== todayDay && activeDays.has(p.day) && p.day <= todayDay)
-          .map((p) => (
-            <circle key={p.day} cx={p.x} cy={p.y} r="3.2" fill="var(--color-pine)" />
-          ))}
+          .map((p) =>
+            fullDays.has(p.day) ? (
+              <g key={p.day} className="text-pine">
+                <circle cx={p.x} cy={p.y} r="3.2" fill="var(--color-pine)" />
+                <g transform={`translate(${p.x - 4}, ${p.y - 15})`}>
+                  <WaypointFlag size={13} />
+                </g>
+              </g>
+            ) : (
+              <circle key={p.day} cx={p.x} cy={p.y} r="3.2" fill="var(--color-pine)" />
+            ),
+          )}
         {/* passed days with nothing logged */}
         {pts
           .filter((p) => p.day < todayDay && !activeDays.has(p.day))
@@ -68,7 +80,9 @@ export function RouteStrip({
       <div className="mt-2 flex items-baseline justify-between font-mono text-[11px] tracking-[0.12em] text-ink-faint">
         <span>{monthLabel.toUpperCase()}</span>
         <span>
-          <span className="text-pine-deep">{campCount} CAMPS</span> · LEG {todayDay}/{daysInMonth}
+          <span className="text-pine-deep">{campCount} CAMPS</span>
+          {fullDays.size > 0 && <span className="text-pine-deep"> · {fullDays.size} FULL</span>} · LEG{' '}
+          {todayDay}/{daysInMonth}
         </span>
       </div>
     </div>

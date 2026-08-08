@@ -205,3 +205,22 @@ table,
   /* The settle is authored in the keyframes; the easing stays a clean ease-out. */
   animation: plant 360ms cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+/* The burst — eight survey ticks radiating once when a flag is planted.
+   Rides with plant-in on every fresh checkoff; never loops. */
+@keyframes burst {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+.burst-out {
+  animation: burst 480ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

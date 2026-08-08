@@ -93,9 +93,11 @@ export function DashboardView({
   tasksRemaining,
   workoutStreak,
   weeklyWeights,
+  athWeight,
   daysInMonth,
   todayDay,
   activeDays,
+  fullDays,
   monthLabel,
 }: {
   profile: Profile;
@@ -106,9 +108,11 @@ export function DashboardView({
   tasksRemaining: number;
   workoutStreak: number;
   weeklyWeights: number[];
+  athWeight: number | null;
   daysInMonth: number;
   todayDay: number;
   activeDays: Set<number>;
+  fullDays: Set<number>;
   monthLabel: string;
 }) {
   const router = useRouter();
@@ -255,6 +259,7 @@ export function DashboardView({
             daysInMonth={daysInMonth}
             todayDay={todayDay}
             activeDays={activeDays}
+            fullDays={fullDays}
             monthLabel={monthLabel}
           />
 
@@ -290,7 +295,7 @@ export function DashboardView({
           {show('weeklyWeightGraph') && (
             <div className="plate p-4">
               <p className="map-label mb-3">Weight profile · 7 days</p>
-              <ElevationProfile weights={weeklyWeights} goalKg={profile.goalWeightKg} />
+              <ElevationProfile weights={weeklyWeights} goalKg={profile.goalWeightKg} athKg={athWeight} />
             </div>
           )}
         </div>

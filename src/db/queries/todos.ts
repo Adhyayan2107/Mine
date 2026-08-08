@@ -3,7 +3,8 @@ import type { AppDatabase } from '../types';
 import { todos, type Todo, type NewTodo } from '../schema';
 
 export async function listTodos(db: AppDatabase): Promise<Todo[]> {
-  return db.select().from(todos).orderBy(todos.dueDate);
+  // Null due_time sorts after set times within a day — "by EOD" comes last.
+  return db.select().from(todos).orderBy(todos.dueDate, todos.dueTime);
 }
 
 export async function listDueTodayOrOverdue(db: AppDatabase, today: string): Promise<Todo[]> {

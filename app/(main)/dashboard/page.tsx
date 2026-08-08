@@ -1,6 +1,6 @@
 import { db } from '@/db/client';
 import { getProfile } from '@/db/queries/profile';
-import { getDailyLog, listLastNDays, workoutStreak as getWorkoutStreak } from '@/db/queries/daily-log';
+import { listLastNDays, allTimeHighWeight, workoutStreak as getWorkoutStreak } from '@/db/queries/daily-log';
 import { listWorkoutSplitDays } from '@/db/queries/workout-split-days';
 import { listActiveHabits, listCompletedHabitIdsForDate } from '@/db/queries/habits';
 import { listDueTodayOrOverdue } from '@/db/queries/todos';
@@ -25,19 +25,32 @@ export default async function DashboardPage() {
   const monthStart = `${year}-${pad(month)}-01`;
   const monthEnd = `${year}-${pad(month)}-${pad(daysInMonth)}`;
 
-  const [profile, todayLog, splitDays, activeHabits, completedIds, tasksDue, weekLogs, streak, widgets, monthActivity] =
-    await Promise.all([
-      getProfile(db),
-      getDailyLog(db, today),
-      listWorkoutSplitDays(db),
-      listActiveHabits(db),
-      listCompletedHabitIdsForDate(db, today),
-      listDueTodayOrOverdue(db, today),
-      listLastNDays(db, 7, today),
-      getWorkoutStreak(db, today),
-      listDashboardWidgets(db),
-      getMonthActivity(db, monthStart, monthEnd),
-    ]);
+  const [
+    profile,
+    splitDays,
+    activeHabits,
+    completedIds,
+    tasksDue,
+    weekLogs,
+    streak,
+    widgets,
+    monthActivity,
+    athWeight,
+  ] = await Promise.all([
+    getProfile(db),
+    listWorkoutSplitDays(db),
+    listActiveHabits(db),
+    listCompletedHabitIdsForDate(db, today),
+    listDueTodayOrOverdue(db, today),
+    listLastNDays(db, 7, today),
+    getWorkoutStreak(db, today),
+    listDashboardWidgets(db),
+    getMonthActivity(db, monthStart, monthEnd),
+    allTimeHighWeight(db),
+  ]);
+  // The 7-day window ends today — today's log rides along instead of being
+  // its own round trip.
+  const todayLog = weekLogs.find((l) => l.date === today) ?? null;
 
   if (!profile) return <div className="p-4">Setting things up…</div>;
 
@@ -46,11 +59,14 @@ export default async function DashboardPage() {
   const weeklyWeights = weekLogs.map((l) => l.weightKg).filter((w): w is number => w !== null);
 
   // Days of this month with anything logged — the camps on the route strip.
+  // A day with all four logged (weight, workout, habits, journal) is a full
+  // log and gets its flag planted.
   const activeDays = new Set<number>();
+  const fullDays = new Set<number>();
   for (const [date, a] of monthActivity) {
-    if (a.hasWeight || a.hasWorkout || a.habitsCompleted > 0 || a.hasJournal) {
-      activeDays.add(Number(date.slice(8)));
-    }
+    const parts = [a.hasWeight, a.hasWorkout, a.habitsCompleted > 0, a.hasJournal];
+    if (parts.some(Boolean)) activeDays.add(Number(date.slice(8)));
+    if (parts.every(Boolean)) fullDays.add(Number(date.slice(8)));
   }
 
   return (
@@ -63,9 +79,11 @@ export default async function DashboardPage() {
       tasksRemaining={tasksDue.length}
       workoutStreak={streak}
       weeklyWeights={weeklyWeights}
+      athWeight={athWeight}
       daysInMonth={daysInMonth}
       todayDay={todayDay}
       activeDays={activeDays}
+      fullDays={fullDays}
       monthLabel={`${MONTH_NAMES[month - 1]} ${year}`}
     />
   );

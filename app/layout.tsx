@@ -25,6 +25,9 @@ const chivoMono = Chivo_Mono({
 });
 
 export const dynamic = 'force-dynamic';
+// Vercel's default function limit 504s while a paused/cold database resumes;
+// give slow starts room to finish instead of erroring the whole page.
+export const maxDuration = 60;
 
 export const metadata: Metadata = {
   title: 'Adhyayan OS',
@@ -62,8 +65,17 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the
 finish review, the verdict, and DESIGN.md.
 `;
 
+// Seeding is idempotent and race-safe, but it still cost a write round trip
+// on every request when awaited inline. Run it once per server process; on
+// failure the memo resets so the next request retries.
+let seedOnce: Promise<void> | null = null;
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  await seedIfNeeded(db);
+  seedOnce ??= seedIfNeeded(db).catch((err) => {
+    seedOnce = null;
+    throw err;
+  });
+  await seedOnce;
   const profile = await getProfile(db);
   const themeMode = profile?.themeMode ?? 'dark';
   const isDark = themeMode !== 'light';

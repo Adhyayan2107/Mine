@@ -39,13 +39,43 @@ export function PlotCheck({
   const flag = size === 'lg' ? 22 : size === 'sm' ? 12 : 15;
   return (
     <span
-      className={`flex shrink-0 items-center justify-center ${box} ${
+      className={`relative flex shrink-0 items-center justify-center ${box} ${
         done
           ? 'border border-pine bg-pine text-surface-raised'
           : 'border border-dashed border-hairline-strong bg-surface-sunken/40 text-transparent'
       } ${className}`}
     >
-      {done && <WaypointFlag size={flag} className="plant-in" />}
+      {done && (
+        <>
+          <WaypointFlag size={flag} className="plant-in" />
+          {/* eight survey ticks burst out once as the flag lands */}
+          <svg
+            viewBox="0 0 40 40"
+            aria-hidden="true"
+            className="burst-out pointer-events-none absolute -inset-2 h-auto w-auto text-pine"
+          >
+            {Array.from({ length: 8 }, (_, i) => {
+              const a = (i * Math.PI) / 4;
+              const x1 = 20 + Math.cos(a) * 14;
+              const y1 = 20 + Math.sin(a) * 14;
+              const x2 = 20 + Math.cos(a) * 19;
+              const y2 = 20 + Math.sin(a) * 19;
+              return (
+                <line
+                  key={i}
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              );
+            })}
+          </svg>
+        </>
+      )}
     </span>
   );
 }

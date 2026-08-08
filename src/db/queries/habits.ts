@@ -20,6 +20,12 @@ export async function archiveHabit(db: AppDatabase, id: number): Promise<void> {
   await db.update(habits).set({ isActive: false }).where(eq(habits.id, id));
 }
 
+/** Hard delete: completions first (FK), then the habit itself. */
+export async function deleteHabit(db: AppDatabase, id: number): Promise<void> {
+  await db.delete(habitCompletions).where(eq(habitCompletions.habitId, id));
+  await db.delete(habits).where(eq(habits.id, id));
+}
+
 export async function listCompletionsForHabit(db: AppDatabase, habitId: number): Promise<HabitCompletion[]> {
   return db.select().from(habitCompletions).where(eq(habitCompletions.habitId, habitId));
 }

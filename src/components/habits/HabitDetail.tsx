@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { archiveHabitAction } from '@/actions/habits';
+import { archiveHabitAction, deleteHabitAction, toggleHabitOnDateAction } from '@/actions/habits';
 import { HabitEditModal } from './HabitEditModal';
 import { HabitHeatmapGrid } from './HabitHeatmap';
 import { SheetHeader } from '@/components/ui/SheetHeader';
+import { SheetModal } from '@/components/ui/SheetModal';
 import { WaypointFlag } from '@/components/ui/Waypoint';
 import type { Habit } from '@/db/schema';
 
@@ -24,8 +25,25 @@ export function HabitDetail({
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [optimistic, setOptimistic] = useState<Record<string, boolean>>({});
+  const [, startTransition] = useTransition();
+
   const dateSet = new Set(completionDates);
-  const sortedRecent = [...completionDates].sort().reverse().slice(0, 8);
+  for (const [date, done] of Object.entries(optimistic)) {
+    if (done) dateSet.add(date);
+    else dateSet.delete(date);
+  }
+  const sortedRecent = [...dateSet].sort().reverse().slice(0, 8);
+
+  function togglePastDay(date: string) {
+    if (date > today) return;
+    setOptimistic((prev) => ({ ...prev, [date]: !dateSet.has(date) }));
+    startTransition(async () => {
+      await toggleHabitOnDateAction(habit.id, date);
+      router.refresh();
+    });
+  }
 
   return (
     <div className="mx-auto max-w-[880px] p-4 md:p-8">
@@ -45,9 +63,15 @@ export function HabitDetail({
                 await archiveHabitAction(habit.id);
                 router.push('/habits');
               }}
-              className="border border-danger/50 px-3 py-1.5 text-xs font-medium text-danger transition-colors hover:border-danger"
+              className="border border-hairline-strong px-3 py-1.5 text-xs font-medium text-ink-muted transition-colors hover:text-ink"
             >
               Archive
+            </button>
+            <button
+              onClick={() => setDeleting(true)}
+              className="border border-danger/50 px-3 py-1.5 text-xs font-medium text-danger transition-colors hover:border-danger"
+            >
+              Delete
             </button>
           </div>
         }
@@ -73,8 +97,8 @@ export function HabitDetail({
       </div>
 
       <div className="plate mt-4 p-4">
-        <p className="map-label mb-3">Last 14 weeks</p>
-        <HabitHeatmapGrid completedDates={dateSet} today={today} />
+        <p className="map-label mb-3">Last 14 weeks · tap any day to edit</p>
+        <HabitHeatmapGrid completedDates={dateSet} today={today} onToggle={togglePastDay} />
       </div>
 
       <div className="plate mt-4">
@@ -104,6 +128,33 @@ export function HabitDetail({
           router.refresh();
         }}
       />
+
+      {deleting && (
+        <SheetModal title={`Delete "${habit.name}"?`} onClose={() => setDeleting(false)}>
+          <p className="mb-4 text-sm leading-relaxed text-ink-muted">
+            This cuts the rope for good — the habit and its {completionDates.length} planted{' '}
+            {completionDates.length === 1 ? 'flag' : 'flags'} are gone. Archive instead if you just
+            want it off the list.
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setDeleting(false)}
+              className="flex-1 border border-hairline-strong py-3 font-medium text-ink-muted transition-transform active:scale-[0.98]"
+            >
+              Keep it
+            </button>
+            <button
+              onClick={async () => {
+                await deleteHabitAction(habit.id);
+                router.push('/habits');
+              }}
+              className="flex-1 bg-danger py-3 font-semibold text-surface-raised transition-transform active:scale-[0.98]"
+            >
+              Delete habit
+            </button>
+          </div>
+        </SheetModal>
+      )}
     </div>
   );
 }

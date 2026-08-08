@@ -67,7 +67,15 @@ export function TodoList({ todos, categories }: { todos: Todo[]; categories: Cat
         <ul className="plate divide-y divide-hairline">
           {todos.map((todo) => {
             const isCompleted = optimistic[todo.id] ?? todo.isCompleted;
-            const overdue = !isCompleted && !!todo.dueDate && todo.dueDate < today;
+            const nowTime = new Date().toTimeString().slice(0, 5);
+            const overdue =
+              !isCompleted &&
+              !!todo.dueDate &&
+              (todo.dueDate < today ||
+                (todo.dueDate === today && !!todo.dueTime && todo.dueTime < nowTime));
+            const dueLabel = todo.dueDate
+              ? `${todo.dueDate} · ${todo.dueTime ?? 'BY EOD'}`
+              : null;
             const cat = categoryName(todo.categoryId);
             const tag = PRIORITY_TAG[todo.priority] ?? PRIORITY_TAG.medium;
             return (
@@ -86,9 +94,9 @@ export function TodoList({ todos, categories }: { todos: Todo[]; categories: Cat
                   <span className="mt-0.5 flex flex-wrap items-center gap-x-2.5 font-mono text-[10px] tracking-[0.1em]">
                     <span className={tag.className}>{tag.text}</span>
                     {cat && <span className="text-ink-faint">{cat.toUpperCase()}</span>}
-                    {todo.dueDate && (
+                    {dueLabel && (
                       <span className={overdue ? 'font-semibold text-danger' : 'text-ink-faint'}>
-                        {overdue ? `OVERDUE · ${todo.dueDate}` : `DUE ${todo.dueDate}`}
+                        {overdue ? `OVERDUE · ${dueLabel}` : `DUE ${dueLabel}`}
                       </span>
                     )}
                   </span>

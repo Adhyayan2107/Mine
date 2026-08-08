@@ -59,7 +59,7 @@ export function CalendarGrid({
     <>
       <div className="grid grid-cols-7 gap-px border-x border-t border-hairline bg-hairline">
         {WEEKDAYS.map((w) => (
-          <div key={w} className="bg-surface py-2 text-center font-mono text-[9px] tracking-[0.16em] text-ink-faint">
+          <div key={w} className="bg-surface py-2 text-center font-mono text-[10px] tracking-[0.16em] text-ink-faint">
             {w}
           </div>
         ))}
@@ -88,7 +88,8 @@ export function CalendarGrid({
                 >
                   {pad(cell.day)}
                 </span>
-                {/* the camp sits at the cell's center so the route line threads through it */}
+                {/* the camp sits at the cell's center so the route line threads through it;
+                    a full log (all four tracked) plants the flag on the camp */}
                 {score > 0 && (
                   <span
                     className="absolute inset-0 m-auto bg-pine"
@@ -98,6 +99,11 @@ export function CalendarGrid({
                       opacity: 0.65 + score * 0.0875,
                     }}
                   />
+                )}
+                {score === 4 && (
+                  <span className="absolute right-1.5 top-1 text-pine-deep">
+                    <WaypointFlag size={12} />
+                  </span>
                 )}
                 {isToday && (
                   <span className="absolute bottom-1 left-1.5 text-route">
@@ -138,6 +144,9 @@ export function CalendarGrid({
       <div className="mt-3 flex items-center gap-4 font-mono text-[10px] tracking-[0.12em] text-ink-faint">
         <span className="flex items-center gap-1.5">
           <span className="inline-block h-2.5 w-2.5 bg-pine" /> CAMP · SIZED BY WHAT YOU LOGGED
+        </span>
+        <span className="flex items-center gap-1.5 text-pine-deep">
+          <WaypointFlag size={11} className="text-pine" /> FULL LOG
         </span>
         <span className="flex items-center gap-1.5 text-route-deep">
           <WaypointFlag size={11} className="text-route" /> TODAY

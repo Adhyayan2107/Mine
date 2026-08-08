@@ -38,20 +38,32 @@ export function HabitList({
   }
 
   const doneCount = habits.filter((h) => optimistic[h.id] ?? completedSet.has(h.id)).length;
+  const summitDay = habits.length > 0 && doneCount === habits.length;
 
   return (
     <div className="mx-auto max-w-[880px] p-4 pb-44 md:p-8 md:pb-28">
       <SheetHeader
         title="Habits"
         sheet="SHEET 03"
-        note={`${doneCount} of ${habits.length} ropes secured today`}
+        note={
+          summitDay
+            ? 'Summit day — every rope secured. Nothing left on the face.'
+            : `${doneCount} of ${habits.length} ropes secured today`
+        }
       />
 
-      <div className="mb-4 h-[3px] w-full bg-surface-sunken">
-        <div
-          className="h-full bg-pine transition-[width] duration-300"
-          style={{ width: `${habits.length ? (doneCount / habits.length) * 100 : 0}%` }}
-        />
+      <div className="mb-4 flex items-center gap-2">
+        <div className="h-[3px] flex-1 bg-surface-sunken">
+          <div
+            className={`h-full transition-[width] duration-300 ${summitDay ? 'bg-route' : 'bg-pine'}`}
+            style={{ width: `${habits.length ? (doneCount / habits.length) * 100 : 0}%` }}
+          />
+        </div>
+        {summitDay && (
+          <span className="plant-in flex items-center gap-1 font-mono text-[10px] tracking-[0.14em] text-route-deep">
+            <PlotCheck done size="sm" /> SUMMIT
+          </span>
+        )}
       </div>
 
       {habits.length === 0 ? (
