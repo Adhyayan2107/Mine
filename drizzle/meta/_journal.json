@@ -15,6 +15,13 @@
       "when": 1786148677065,
       "tag": "0001_nasty_bloodstrike",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786152229492,
+      "tag": "0002_flat_nuke",
+      "breakpoints": true
     }
   ]
 }

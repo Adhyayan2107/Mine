@@ -31,7 +31,7 @@ export function JournalForm({ entry }: { entry: JournalEntry | null }) {
     <div className="mx-auto max-w-[720px] p-4 md:p-8">
       <SheetHeader
         title="Journal"
-        sheet="SHEET 05"
+        sheet="SHEET 06"
         note="Today's page of the summit log"
         action={
           <Link

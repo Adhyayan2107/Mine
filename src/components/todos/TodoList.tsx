@@ -46,7 +46,7 @@ export function TodoList({ todos, categories }: { todos: Todo[]; categories: Cat
     <div className="mx-auto max-w-[880px] p-4 pb-44 md:p-8 md:pb-28">
       <SheetHeader
         title="To-Dos"
-        sheet="SHEET 02"
+        sheet="SHEET 03"
         note={openCount === 0 ? 'Manifest clear' : `${openCount} open on the manifest`}
         action={
           <Link

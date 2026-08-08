@@ -83,6 +83,39 @@ export const habitCompletions = pgTable(
   }),
 );
 
+/** The exercise catalog: ~10 movements per muscle group, seeded once. */
+export const exercises = pgTable('exercises', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull().unique(),
+  // chest | lats | biceps | triceps | shoulders | legs | abs
+  muscleGroup: text('muscle_group').notNull(),
+  sortOrder: integer('sort_order').notNull().default(0),
+});
+
+/** Which exercises were picked for a given day's session, in picked order. */
+export const workoutSelections = pgTable(
+  'workout_selections',
+  {
+    id: serial('id').primaryKey(),
+    date: date('date', { mode: 'string' }).notNull(),
+    exerciseId: integer('exercise_id').notNull().references(() => exercises.id),
+    position: integer('position').notNull().default(0),
+  },
+  (table) => ({
+    dateExerciseUnique: unique().on(table.date, table.exerciseId),
+  }),
+);
+
+/** One logged set: weight in kg × reps, numbered within the day+exercise. */
+export const workoutSets = pgTable('workout_sets', {
+  id: serial('id').primaryKey(),
+  date: date('date', { mode: 'string' }).notNull(),
+  exerciseId: integer('exercise_id').notNull().references(() => exercises.id),
+  setNumber: integer('set_number').notNull(),
+  weightKg: real('weight_kg').notNull(),
+  reps: integer('reps').notNull(),
+});
+
 export const journalEntries = pgTable('journal_entries', {
   id: serial('id').primaryKey(),
   date: date('date', { mode: 'string' }).notNull().unique(),
@@ -124,6 +157,9 @@ export type NewHabit = typeof habits.$inferInsert;
 export type HabitCompletion = typeof habitCompletions.$inferSelect;
 export type JournalEntry = typeof journalEntries.$inferSelect;
 export type NewJournalEntry = typeof journalEntries.$inferInsert;
+export type Exercise = typeof exercises.$inferSelect;
+export type WorkoutSelection = typeof workoutSelections.$inferSelect;
+export type WorkoutSet = typeof workoutSets.$inferSelect;
 export type DashboardWidgetConfig = typeof dashboardWidgetConfigs.$inferSelect;
 export type PushSubscription = typeof pushSubscriptions.$inferSelect;
 export type NewPushSubscription = typeof pushSubscriptions.$inferInsert;

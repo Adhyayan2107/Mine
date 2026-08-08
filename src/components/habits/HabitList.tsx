@@ -44,7 +44,7 @@ export function HabitList({
     <div className="mx-auto max-w-[880px] p-4 pb-44 md:p-8 md:pb-28">
       <SheetHeader
         title="Habits"
-        sheet="SHEET 03"
+        sheet="SHEET 04"
         note={
           summitDay
             ? 'Summit day — every rope secured. Nothing left on the face.'

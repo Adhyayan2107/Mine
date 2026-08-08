@@ -24,6 +24,20 @@ export function DashboardIcon({ className }: IconProps) {
   );
 }
 
+/** Workout — the loaded bar: plates on a barbell. */
+export function WorkoutIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M1.5 10h2M16.5 10h2" />
+      <path d="M6.5 10h7" />
+      <rect x="3.5" y="6" width="1.8" height="8" rx="0.4" fill="currentColor" stroke="none" />
+      <rect x="14.7" y="6" width="1.8" height="8" rx="0.4" fill="currentColor" stroke="none" />
+      <rect x="5.8" y="7.5" width="1.4" height="5" rx="0.4" fill="currentColor" stroke="none" />
+      <rect x="12.8" y="7.5" width="1.4" height="5" rx="0.4" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 /** To-Dos — the expedition manifest: ruled entries, one ticked. */
 export function TodosIcon({ className }: IconProps) {
   return (

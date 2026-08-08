@@ -26,7 +26,7 @@ Single-user by design: password-gated, no accounts, no ads, no social layer. It 
 
 ## Capabilities and Constraints
 
-- Pages: Dashboard (reorderable/hideable quick-log widgets, weight sparkline, today's split), To-Dos (priorities, due dates, categories), Habits (daily checkoff, streaks, heatmaps), Calendar (month view with per-day activity, day-detail drill-down), Journal (morning plan, wins, lessons, tomorrow's focus, mood & energy), Settings (profile, targets, theme, JSON export/import, guarded reset).
+- Pages: Dashboard (reorderable/hideable quick-log widgets, weight profile, today's split), Workout (per-split exercise picker from a seeded catalog of ~10 movements per muscle group, set logging in kg × reps, last-session comparison), To-Dos (priorities, due dates with optional time — blank means end of day, categories), Habits (daily checkoff, retroactive edits, streaks, heatmaps, delete/archive), Calendar (month view with per-day activity, day-detail drill-down), Journal (morning plan, wins, lessons, tomorrow's focus, mood & energy), Settings (profile, targets, theme, JSON export/import, guarded reset).
 - Stack: Next.js 16 (breaking changes vs. older versions — read `node_modules/next/dist/docs/` before coding), React 19, Tailwind v4 (tokens in `app/globals.css` `@theme`; no JS config), Drizzle + Postgres, web-push. Tests via vitest + playwright.
 - Single password gate; session-based auth; no multi-tenancy.
 

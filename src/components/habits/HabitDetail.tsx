@@ -49,7 +49,7 @@ export function HabitDetail({
     <div className="mx-auto max-w-[880px] p-4 md:p-8">
       <SheetHeader
         title={habit.name}
-        sheet="SHEET 03 · ROPE"
+        sheet="SHEET 04 · ROPE"
         action={
           <div className="flex gap-2">
             <button

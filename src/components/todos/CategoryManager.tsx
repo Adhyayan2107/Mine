@@ -20,7 +20,7 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
 
   return (
     <div className="mx-auto max-w-[880px] p-4 md:p-8">
-      <SheetHeader title="Categories" sheet="SHEET 02 · A" note="How the manifest is sorted" />
+      <SheetHeader title="Categories" sheet="SHEET 03 · A" note="How the manifest is sorted" />
 
       <div className="mb-4 flex gap-2">
         <input

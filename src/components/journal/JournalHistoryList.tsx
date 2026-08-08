@@ -4,7 +4,7 @@ import type { JournalEntry } from '@/db/schema';
 export function JournalHistoryList({ entries }: { entries: JournalEntry[] }) {
   return (
     <div className="mx-auto max-w-[720px] p-4 md:p-8">
-      <SheetHeader title="Journal history" sheet="SHEET 05 · LOG" note="Earlier pages of the summit log" />
+      <SheetHeader title="Journal history" sheet="SHEET 06 · LOG" note="Earlier pages of the summit log" />
       {entries.length === 0 ? (
         <p className="text-sm text-ink-faint">No entries yet — your first one starts the trail.</p>
       ) : (

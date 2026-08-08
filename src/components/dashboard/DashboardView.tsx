@@ -271,7 +271,15 @@ export function DashboardView({
         <div className="mt-4 space-y-4 lg:mt-0">
           {show('todaysWorkout') && (
             <div className="plate p-4">
-              <p className="map-label">Today&apos;s workout</p>
+              <div className="flex items-baseline justify-between">
+                <p className="map-label">Today&apos;s workout</p>
+                <Link
+                  href="/workout"
+                  className="font-mono text-[10px] tracking-[0.12em] text-route-deep hover:text-route"
+                >
+                  OPEN THE SESSION
+                </Link>
+              </div>
               <select
                 value={todayLog?.workoutSplitDayId ?? ''}
                 onChange={async (e) => {

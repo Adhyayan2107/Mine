@@ -1,14 +1,28 @@
 import type { AppDatabase } from './types';
-import { profile, workoutSplitDays, categories, habits, dashboardWidgetConfigs } from './schema';
+import { profile, workoutSplitDays, categories, habits, dashboardWidgetConfigs, exercises } from './schema';
 import {
   SEED_PROFILE,
   SEED_WORKOUT_SPLIT,
   SEED_CATEGORIES,
   SEED_HABITS,
   SEED_DASHBOARD_WIDGET_ORDER,
+  SEED_EXERCISES,
 } from './seed-data';
 
+/**
+ * The exercise catalog seeds independently of the main profile gate so that
+ * databases created before the workout tracker existed still receive it.
+ * `onConflictDoNothing` on the unique name makes it a no-op everywhere else.
+ */
+export async function seedExercisesIfNeeded(db: AppDatabase): Promise<void> {
+  const rows = Object.entries(SEED_EXERCISES).flatMap(([muscleGroup, names]) =>
+    names.map((name, i) => ({ name, muscleGroup, sortOrder: i })),
+  );
+  await db.insert(exercises).values(rows).onConflictDoNothing();
+}
+
 export async function seedIfNeeded(db: AppDatabase): Promise<void> {
+  await seedExercisesIfNeeded(db);
   // A plain "check then insert" is a race: every page load calls this, and
   // concurrent requests can all see an empty table before any of them
   // commits, seeding multiple times over. Fixing `id: 1` turns the insert

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   DashboardIcon,
+  WorkoutIcon,
   TodosIcon,
   HabitsIcon,
   JournalIcon,
@@ -13,11 +14,12 @@ import {
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Today', sheet: '01', Icon: DashboardIcon },
-  { href: '/todos', label: 'To-Dos', sheet: '02', Icon: TodosIcon },
-  { href: '/habits', label: 'Habits', sheet: '03', Icon: HabitsIcon },
-  { href: '/calendar', label: 'Calendar', sheet: '04', Icon: CalendarIcon },
-  { href: '/journal', label: 'Journal', sheet: '05', Icon: JournalIcon },
-  { href: '/settings', label: 'Settings', sheet: '06', Icon: SettingsIcon },
+  { href: '/workout', label: 'Workout', sheet: '02', Icon: WorkoutIcon },
+  { href: '/todos', label: 'To-Dos', sheet: '03', Icon: TodosIcon },
+  { href: '/habits', label: 'Habits', sheet: '04', Icon: HabitsIcon },
+  { href: '/calendar', label: 'Calendar', sheet: '05', Icon: CalendarIcon },
+  { href: '/journal', label: 'Journal', sheet: '06', Icon: JournalIcon },
+  { href: '/settings', label: 'Settings', sheet: '07', Icon: SettingsIcon },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
