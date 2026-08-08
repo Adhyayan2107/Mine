@@ -1,1 +1,1 @@
-ALTER TABLE "todos" ADD COLUMN "due_time" text;
+ALTER TABLE "todos" ADD COLUMN IF NOT EXISTS "due_time" text;
