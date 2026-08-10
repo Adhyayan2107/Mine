@@ -58,6 +58,30 @@ Behavior:
   step, drop repeated mono micro-labels where a plate already names itself.
 - No layout rewrites, no token or color changes.
 
+## 6. Workout hub: finish flow, PR board, cardio (approved 2026-08-10, round 2)
+
+The workout tab becomes a hub; live logging is a mode you enter and leave.
+
+- **States.** No unfinished session → hub (PR board + cardio + "Track
+  workout" button). Unfinished session with exercises → opens straight into
+  the logging view. Finished today → hub with a "session logged · resume"
+  affordance. Finishing is `daily_logs.workout_finished_at` (nullable
+  timestamp); resume clears it.
+- **Logging view.** Existing WorkoutView + a Finish workout button (shown
+  once a set is logged) and a back-to-hub control. Hub↔track is client
+  state on one route.
+- **PR board.** Per exercise ever trained: all-time best set (kg × reps),
+  the date it was hit, and a sparkline of best-weight-per-session.
+  Recent PRs (≤14 days) flagged in route orange.
+- **Cardio.** New `cardio_sessions` table: date, type (run/walk/cycle/
+  other), duration min, optional distance km, optional kcal. Logged from
+  the hub via a sheet form; recent entries listed with personal-best tags
+  (longest, fastest pace, longest time per type).
+- **Calendar.** `DayActivity.hasCardio`; cardio days get a small shoe
+  glyph in the month grid. Cardio does not change the 4-part camp score.
+- Data export keeps its existing scope (it already excludes workout
+  tables); cardio follows that pattern.
+
 ## Testing
 
 - Unit (vitest): date-param validation for quick-log actions; superset

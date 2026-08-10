@@ -62,6 +62,16 @@ export function ArrowRightGlyph({ className, size = 16 }: GlyphProps) {
   );
 }
 
+/** A running shoe in profile — heel left, toe right — marking cardio days. */
+export function ShoeGlyph({ className, size = 16 }: GlyphProps) {
+  return (
+    <svg {...base(size)} className={className}>
+      <path d="M2.5 12.5v-4L5 7l2 1.5 3.5 1c1.5.5 2.5 1.5 2.5 3z" />
+      <path d="M7 8.5l-1 1.2" />
+    </svg>
+  );
+}
+
 /* Trend markers for the workout log — drawn, never unicode. */
 
 export function TrendUpGlyph({ className, size = 14 }: GlyphProps) {

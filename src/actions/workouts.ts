@@ -11,6 +11,8 @@ import {
   pairSuperset,
   unpairSuperset,
 } from '@/db/queries/workouts';
+import { addCardioSession, deleteCardioSession } from '@/db/queries/cardio';
+import { upsertDailyLog } from '@/db/queries/daily-log';
 import { todayDateString } from '@/lib/dates';
 
 function revalidate() {
@@ -54,6 +56,48 @@ export async function unpairSupersetAction(exerciseId: number): Promise<void> {
 export async function deleteSetAction(id: number): Promise<void> {
   await deleteSet(db, id);
   revalidate();
+}
+
+/** Submit the session — the workout tab returns to the hub. */
+export async function finishWorkoutAction(): Promise<void> {
+  await upsertDailyLog(db, todayDateString(), { workoutFinishedAt: new Date().toISOString() });
+  revalidate();
+}
+
+/** Reopen a submitted session to fix a missed set. */
+export async function reopenWorkoutAction(): Promise<void> {
+  await upsertDailyLog(db, todayDateString(), { workoutFinishedAt: null });
+  revalidate();
+}
+
+const CARDIO_TYPES = ['run', 'walk', 'cycle', 'other'];
+
+export async function logCardioAction(input: {
+  type: string;
+  durationMin: number;
+  distanceKm?: number;
+  caloriesKcal?: number;
+}): Promise<void> {
+  const { type, durationMin, distanceKm, caloriesKcal } = input;
+  if (!CARDIO_TYPES.includes(type)) return;
+  if (!Number.isInteger(durationMin) || durationMin <= 0 || durationMin > 24 * 60) return;
+  if (distanceKm !== undefined && (!Number.isFinite(distanceKm) || distanceKm <= 0 || distanceKm > 500)) return;
+  if (caloriesKcal !== undefined && (!Number.isInteger(caloriesKcal) || caloriesKcal <= 0 || caloriesKcal > 20000)) return;
+  await addCardioSession(db, {
+    date: todayDateString(),
+    type,
+    durationMin,
+    distanceKm: distanceKm ?? null,
+    caloriesKcal: caloriesKcal ?? null,
+  });
+  revalidatePath('/workout');
+  revalidatePath('/calendar');
+}
+
+export async function deleteCardioAction(id: number): Promise<void> {
+  await deleteCardioSession(db, id);
+  revalidatePath('/workout');
+  revalidatePath('/calendar');
 }
 
 const MUSCLE_GROUPS = ['chest', 'lats', 'biceps', 'triceps', 'shoulders', 'legs', 'abs'];

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { DayDetailSheet } from './DayDetailSheet';
 import { WaypointFlag } from '@/components/ui/Waypoint';
+import { ShoeGlyph } from '@/components/ui/glyphs';
 import type { DayActivity } from '@/db/queries/calendar';
 
 const WEEKDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
@@ -98,6 +99,11 @@ export function CalendarGrid({
                     <WaypointFlag size={13} />
                   </span>
                 )}
+                {activityByDate[cell.date]?.hasCardio && (
+                  <span className="absolute bottom-1 right-1.5 text-pine-deep">
+                    <ShoeGlyph size={11} />
+                  </span>
+                )}
               </button>
             );
           })}
@@ -114,6 +120,9 @@ export function CalendarGrid({
         </span>
         <span className="flex items-center gap-1.5 text-pine-deep">
           <WaypointFlag size={11} className="text-pine" /> FULL LOG
+        </span>
+        <span className="flex items-center gap-1.5 text-pine-deep">
+          <ShoeGlyph size={11} /> CARDIO
         </span>
         <span className="flex items-center gap-1.5 text-route-deep">
           <WaypointFlag size={11} className="text-route" /> TODAY

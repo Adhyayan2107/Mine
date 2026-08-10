@@ -165,6 +165,76 @@ export async function lastSessionsBefore(
   return result;
 }
 
+export type PRBoardEntry = {
+  exerciseId: number;
+  name: string;
+  muscleGroup: string;
+  /** All-time best set: heaviest weight, most reps at that weight. */
+  best: { weightKg: number; reps: number; date: string };
+  /** Best weight of each of the last sessions, oldest → newest. */
+  sessionBests: number[];
+  sessions: number;
+};
+
+/**
+ * The best-ascents board: for every exercise ever logged, the all-time best
+ * set and a per-session best-weight series for the sparkline.
+ */
+export async function exercisePRBoard(db: AppDatabase, sparkSessions = 12): Promise<PRBoardEntry[]> {
+  const rows = await db
+    .select({
+      exerciseId: workoutSets.exerciseId,
+      date: workoutSets.date,
+      weightKg: workoutSets.weightKg,
+      reps: workoutSets.reps,
+      name: exercises.name,
+      muscleGroup: exercises.muscleGroup,
+    })
+    .from(workoutSets)
+    .innerJoin(exercises, eq(workoutSets.exerciseId, exercises.id))
+    .orderBy(asc(workoutSets.date), asc(workoutSets.setNumber));
+
+  const byExercise = new Map<number, PRBoardEntry & { lastDate: string }>();
+  for (const row of rows) {
+    let e = byExercise.get(row.exerciseId);
+    if (!e) {
+      e = {
+        exerciseId: row.exerciseId,
+        name: row.name,
+        muscleGroup: row.muscleGroup,
+        best: { weightKg: row.weightKg, reps: row.reps, date: row.date },
+        sessionBests: [],
+        sessions: 0,
+        lastDate: '',
+      };
+      byExercise.set(row.exerciseId, e);
+    }
+    if (row.date !== e.lastDate) {
+      e.sessionBests.push(row.weightKg);
+      e.sessions += 1;
+      e.lastDate = row.date;
+    } else {
+      const i = e.sessionBests.length - 1;
+      e.sessionBests[i] = Math.max(e.sessionBests[i], row.weightKg);
+    }
+    if (
+      row.weightKg > e.best.weightKg ||
+      (row.weightKg === e.best.weightKg && row.reps > e.best.reps)
+    ) {
+      e.best = { weightKg: row.weightKg, reps: row.reps, date: row.date };
+    }
+  }
+
+  return [...byExercise.values()].map((e) => ({
+    exerciseId: e.exerciseId,
+    name: e.name,
+    muscleGroup: e.muscleGroup,
+    best: e.best,
+    sessions: e.sessions,
+    sessionBests: e.sessionBests.slice(-sparkSessions),
+  }));
+}
+
 /**
  * Add a movement to the catalog. If the name already exists, returns the
  * existing row instead of failing — creating "Bench Press" twice just finds it.

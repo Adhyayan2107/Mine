@@ -42,6 +42,19 @@ export const dailyLogs = pgTable('daily_logs', {
   waterMl: integer('water_ml').notNull().default(0),
   steps: integer('steps'),
   workoutSplitDayId: integer('workout_split_day_id').references(() => workoutSplitDays.id),
+  // Set when the session is submitted; null while logging (or reopened).
+  workoutFinishedAt: timestamp('workout_finished_at', { mode: 'string' }),
+});
+
+/** One cardio outing — a run, walk, or ride — logged from the workout hub. */
+export const cardioSessions = pgTable('cardio_sessions', {
+  id: serial('id').primaryKey(),
+  date: date('date', { mode: 'string' }).notNull(),
+  // run | walk | cycle | other
+  type: text('type').notNull(),
+  durationMin: integer('duration_min').notNull(),
+  distanceKm: real('distance_km'),
+  caloriesKcal: integer('calories_kcal'),
 });
 
 export const categories = pgTable('categories', {
@@ -164,6 +177,8 @@ export type NewJournalEntry = typeof journalEntries.$inferInsert;
 export type Exercise = typeof exercises.$inferSelect;
 export type WorkoutSelection = typeof workoutSelections.$inferSelect;
 export type WorkoutSet = typeof workoutSets.$inferSelect;
+export type CardioSession = typeof cardioSessions.$inferSelect;
+export type NewCardioSession = typeof cardioSessions.$inferInsert;
 export type DashboardWidgetConfig = typeof dashboardWidgetConfigs.$inferSelect;
 export type PushSubscription = typeof pushSubscriptions.$inferSelect;
 export type NewPushSubscription = typeof pushSubscriptions.$inferInsert;

@@ -9,6 +9,7 @@ import {
   pairSuperset,
   unpairSuperset,
   createExercise,
+  exercisePRBoard,
 } from '@/db/queries/workouts';
 import type { AppDatabase } from '@/db/types';
 
@@ -59,6 +60,36 @@ describe('supersets', () => {
     await removeSelection(db, DAY, a);
     const sels = await listSelectionsForDate(db, DAY);
     expect(sels.find((s) => s.exerciseId === b)?.supersetGroup).toBeNull();
+  });
+});
+
+describe('exercisePRBoard', () => {
+  it('tracks the all-time best set and per-session best weights', async () => {
+    const db = await createTestDb();
+    const [a] = await seedThree(db);
+
+    await addSet(db, '2026-08-01', a, 60, 8);
+    await addSet(db, '2026-08-01', a, 65, 6);
+    await addSet(db, '2026-08-05', a, 70, 5);
+    await addSet(db, '2026-08-05', a, 50, 12, 'drop');
+
+    const board = await exercisePRBoard(db);
+    const bench = board.find((e) => e.exerciseId === a);
+    expect(bench?.best).toEqual({ weightKg: 70, reps: 5, date: '2026-08-05' });
+    expect(bench?.sessionBests).toEqual([65, 70]);
+    expect(bench?.sessions).toBe(2);
+  });
+
+  it('prefers more reps at equal weight and skips never-logged exercises', async () => {
+    const db = await createTestDb();
+    const [a] = await seedThree(db);
+
+    await addSet(db, '2026-08-01', a, 60, 6);
+    await addSet(db, '2026-08-02', a, 60, 9);
+
+    const board = await exercisePRBoard(db);
+    expect(board).toHaveLength(1);
+    expect(board[0].best).toEqual({ weightKg: 60, reps: 9, date: '2026-08-02' });
   });
 });
 

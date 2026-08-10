@@ -11,6 +11,7 @@ import {
   createExerciseAction,
   pairSupersetAction,
   unpairSupersetAction,
+  finishWorkoutAction,
 } from '@/actions/workouts';
 import { SheetHeader } from '@/components/ui/SheetHeader';
 import { SheetModal } from '@/components/ui/SheetModal';
@@ -35,7 +36,7 @@ const SPLIT_GROUPS: Record<string, string[]> = {
   'arms + core': ['biceps', 'triceps', 'abs'],
 };
 
-const GROUP_ORDER = ['chest', 'lats', 'shoulders', 'biceps', 'triceps', 'legs', 'abs'];
+export const GROUP_ORDER = ['chest', 'lats', 'shoulders', 'biceps', 'triceps', 'legs', 'abs'];
 
 export function WorkoutView({
   splitDays,
@@ -44,6 +45,7 @@ export function WorkoutView({
   selections,
   sets,
   lastSessions,
+  onExit,
 }: {
   splitDays: WorkoutSplitDay[];
   currentSplitId: number | null;
@@ -51,6 +53,8 @@ export function WorkoutView({
   selections: WorkoutSelection[];
   sets: WorkoutSet[];
   lastSessions: Record<number, LastSession>;
+  /** Back to the hub; finishing the session also routes through it. */
+  onExit?: () => void;
 }) {
   const router = useRouter();
   const [picking, setPicking] = useState(false);
@@ -170,6 +174,16 @@ export function WorkoutView({
             ? `${selections.length} ${selections.length === 1 ? 'exercise' : 'exercises'} · ${totalSets} ${totalSets === 1 ? 'set' : 'sets'} · ${totalVolume} kg moved`
             : 'Log the session as you climb it.'
         }
+        action={
+          onExit && (
+            <button
+              onClick={onExit}
+              className="border border-hairline-strong px-3 py-1.5 text-xs font-medium text-ink-muted transition-colors hover:text-ink"
+            >
+              Back to hub
+            </button>
+          )
+        }
       />
 
       {/* The day's split sets which exercises lead the picker. */}
@@ -208,6 +222,23 @@ export function WorkoutView({
         </div>
       ) : (
         <div className="space-y-5">{plates}</div>
+      )}
+
+      {/* Submitting plants the day's flag and hands the tab back to the hub. */}
+      {totalSets > 0 && (
+        <button
+          onClick={() =>
+            startTransition(async () => {
+              await finishWorkoutAction();
+              router.refresh();
+              onExit?.();
+            })
+          }
+          className="mt-6 flex w-full items-center justify-center gap-2 bg-pine py-3.5 font-semibold text-surface-raised transition-transform active:scale-[0.99]"
+        >
+          <WaypointFlag size={14} />
+          Finish workout · {totalSets} {totalSets === 1 ? 'set' : 'sets'} · {totalVolume} kg
+        </button>
       )}
 
       <button
