@@ -100,6 +100,8 @@ export const workoutSelections = pgTable(
     date: date('date', { mode: 'string' }).notNull(),
     exerciseId: integer('exercise_id').notNull().references(() => exercises.id),
     position: integer('position').notNull().default(0),
+    // Selections sharing a group number are a superset — logged back to back.
+    supersetGroup: integer('superset_group'),
   },
   (table) => ({
     dateExerciseUnique: unique().on(table.date, table.exerciseId),
@@ -114,6 +116,8 @@ export const workoutSets = pgTable('workout_sets', {
   setNumber: integer('set_number').notNull(),
   weightKg: real('weight_kg').notNull(),
   reps: integer('reps').notNull(),
+  // 'normal' | 'drop' — a drop set is the burnout logged right after its set.
+  setType: text('set_type').notNull().default('normal'),
 });
 
 export const journalEntries = pgTable('journal_entries', {

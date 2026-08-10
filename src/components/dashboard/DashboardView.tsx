@@ -11,13 +11,21 @@ import {
   addWaterAction,
   setWorkoutSplitDayAction,
 } from '@/actions/daily-log';
+import { addDaysToDateString } from '@/lib/dates';
 import { QuickNumberModal } from '@/components/ui/QuickNumberModal';
+import { ArrowLeftGlyph, ArrowRightGlyph } from '@/components/ui/glyphs';
 import { SheetHeader } from '@/components/ui/SheetHeader';
 import { RouteStrip } from './RouteStrip';
 import { ElevationProfile } from './ElevationProfile';
 import type { Profile, DailyLog, WorkoutSplitDay } from '@/db/schema';
 
 type QuickField = 'weight' | 'calories' | 'protein' | 'steps' | null;
+
+function dayLabel(date: string): string {
+  return new Date(`${date}T00:00:00Z`)
+    .toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', timeZone: 'UTC' })
+    .toUpperCase();
+}
 
 /**
  * One row of the chart table — a surveyor's data line, not a metric tile:
@@ -47,7 +55,7 @@ function Station({
   return (
     <Comp
       onClick={onClick}
-      className={`grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 px-3.5 py-3 text-left transition-colors md:grid-cols-[10.5rem_9rem_minmax(0,1fr)_auto] md:py-3.5 ${
+      className={`grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 px-4 py-4 text-left transition-colors md:grid-cols-[10.5rem_9rem_minmax(0,1fr)_auto] ${
         onClick ? 'cursor-pointer hover:bg-surface-raised active:bg-surface-sunken' : ''
       }`}
     >
@@ -86,7 +94,9 @@ function Station({
 
 export function DashboardView({
   profile,
-  todayLog,
+  dayLog,
+  viewDate,
+  isToday,
   splitDays,
   enabledWidgetKeys,
   habitRatio,
@@ -95,13 +105,15 @@ export function DashboardView({
   weeklyWeights,
   athWeight,
   daysInMonth,
-  todayDay,
+  viewDay,
   activeDays,
   fullDays,
   monthLabel,
 }: {
   profile: Profile;
-  todayLog: DailyLog | null;
+  dayLog: DailyLog | null;
+  viewDate: string;
+  isToday: boolean;
   splitDays: WorkoutSplitDay[];
   enabledWidgetKeys: Set<string>;
   habitRatio: number;
@@ -110,7 +122,7 @@ export function DashboardView({
   weeklyWeights: number[];
   athWeight: number | null;
   daysInMonth: number;
-  todayDay: number;
+  viewDay: number;
   activeDays: Set<number>;
   fullDays: Set<number>;
   monthLabel: string;
@@ -118,34 +130,32 @@ export function DashboardView({
   const router = useRouter();
   const [quickField, setQuickField] = useState<QuickField>(null);
   const show = (key: string) => enabledWidgetKeys.has(key);
-  const currentSplit = splitDays.find((d) => d.id === todayLog?.workoutSplitDayId);
+  const currentSplit = splitDays.find((d) => d.id === dayLog?.workoutSplitDayId);
 
   async function submit(value: number) {
-    if (quickField === 'weight') await logWeightAction(value);
-    if (quickField === 'calories') await addCaloriesAction(value);
-    if (quickField === 'protein') await addProteinAction(value);
-    if (quickField === 'steps') await logStepsAction(value);
+    if (quickField === 'weight') await logWeightAction(value, viewDate);
+    if (quickField === 'calories') await addCaloriesAction(value, viewDate);
+    if (quickField === 'protein') await addProteinAction(value, viewDate);
+    if (quickField === 'steps') await logStepsAction(value, viewDate);
     setQuickField(null);
     router.refresh();
   }
 
-  const caloriesEaten = todayLog?.caloriesKcal ?? 0;
+  const caloriesEaten = dayLog?.caloriesKcal ?? 0;
   const caloriesLeft = profile.dailyCaloriesKcal - caloriesEaten;
-  const protein = todayLog?.proteinG ?? 0;
-  const water = todayLog?.waterMl ?? 0;
-  const steps = todayLog?.steps ?? 0;
+  const protein = dayLog?.proteinG ?? 0;
+  const water = dayLog?.waterMl ?? 0;
+  const steps = dayLog?.steps ?? 0;
 
-  // Build the station list first so the chart table can pad its final row
-  // with hatched "unassigned plot" cells instead of leaving raw gaps.
   const stations: React.ReactNode[] = [];
   if (show('todaysWeight'))
     stations.push(
       <Station
         key="weight"
         label="Weight"
-        value={todayLog?.weightKg ? `${todayLog.weightKg}` : null}
+        value={dayLog?.weightKg ? `${dayLog.weightKg}` : null}
         unit="kg"
-        hint={todayLog?.weightKg ? `GOAL ${profile.goalWeightKg} KG` : undefined}
+        hint={dayLog?.weightKg ? `GOAL ${profile.goalWeightKg} KG` : undefined}
         onClick={() => setQuickField('weight')}
       />,
     );
@@ -158,7 +168,7 @@ export function DashboardView({
         unit="kcal"
         progress={profile.dailyCaloriesKcal ? caloriesEaten / profile.dailyCaloriesKcal : 0}
         progressColor={caloriesLeft < 0 ? 'bg-danger' : 'bg-route'}
-        annotation={`${caloriesEaten}/${profile.dailyCaloriesKcal}`}
+        annotation={caloriesEaten > 0 ? `${caloriesEaten}/${profile.dailyCaloriesKcal}` : undefined}
         onClick={() => setQuickField('calories')}
       />,
     );
@@ -178,13 +188,14 @@ export function DashboardView({
     stations.push(
       <Station
         key="water"
-        label="Water · +250 ml a tap"
+        label="Water"
         value={`${water}`}
         unit={`/ ${profile.dailyWaterMl} ml`}
         progress={profile.dailyWaterMl ? water / profile.dailyWaterMl : 0}
         progressColor="bg-glacier"
+        annotation={water === 0 ? '+250 ML A TAP' : undefined}
         onClick={async () => {
-          await addWaterAction(250);
+          await addWaterAction(250, viewDate);
           router.refresh();
         }}
       />,
@@ -194,9 +205,9 @@ export function DashboardView({
     <Station
       key="steps"
       label="Steps"
-      value={todayLog?.steps ? `${steps}` : null}
-      unit={todayLog?.steps ? `/ ${profile.dailySteps}` : undefined}
-      progress={todayLog?.steps ? steps / profile.dailySteps : undefined}
+      value={dayLog?.steps ? `${steps}` : null}
+      unit={dayLog?.steps ? `/ ${profile.dailySteps}` : undefined}
+      progress={dayLog?.steps ? steps / profile.dailySteps : undefined}
       progressColor={steps >= profile.dailySteps ? 'bg-pine' : 'bg-route'}
       onClick={() => setQuickField('steps')}
     />,
@@ -222,9 +233,7 @@ export function DashboardView({
       />,
     );
   if (show('workoutStreak'))
-    stations.push(
-      <Station key="streak" label="Workout streak" value={`${workoutStreak}`} unit="days" hint="ROPE UNBROKEN" />,
-    );
+    stations.push(<Station key="streak" label="Workout streak" value={`${workoutStreak}`} unit="days" />);
   if (show('currentGoal'))
     stations.push(
       <Station
@@ -236,13 +245,17 @@ export function DashboardView({
       />,
     );
 
+  const prevDate = addDaysToDateString(viewDate, -1);
+  const nextDate = addDaysToDateString(viewDate, 1);
+  const navButton =
+    'flex h-9 w-9 items-center justify-center border border-hairline-strong text-ink-muted transition-colors hover:text-ink';
 
   return (
     <div className="mx-auto max-w-[1160px] p-4 md:p-8">
       <SheetHeader
-        title="Today"
+        title={isToday ? 'Today' : dayLabel(viewDate)}
         sheet="SHEET 01"
-        note={`${profile.name.split(' ')[0]}'s route — day ${todayDay} of ${daysInMonth}`}
+        note={`${profile.name.split(' ')[0]}'s route — day ${viewDay} of ${daysInMonth}`}
         action={
           <Link
             href="/dashboard/widgets"
@@ -253,26 +266,54 @@ export function DashboardView({
         }
       />
 
-      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start lg:gap-6">
-        <div className="min-w-0">
-          <RouteStrip
-            daysInMonth={daysInMonth}
-            todayDay={todayDay}
-            activeDays={activeDays}
-            fullDays={fullDays}
-            monthLabel={monthLabel}
-          />
+      {/* Day navigation: step back to review or backfill, forward until today. */}
+      <div className="mb-5 flex items-center gap-2">
+        <Link href={`/dashboard?d=${prevDate}`} aria-label="Previous day" className={navButton}>
+          <ArrowLeftGlyph size={14} />
+        </Link>
+        {isToday ? (
+          <span className={`${navButton} cursor-default border-hairline text-ink-faint/50 hover:text-ink-faint/50`} aria-hidden="true">
+            <ArrowRightGlyph size={14} />
+          </span>
+        ) : (
+          <Link href={`/dashboard?d=${nextDate}`} aria-label="Next day" className={navButton}>
+            <ArrowRightGlyph size={14} />
+          </Link>
+        )}
+        <p className="ml-1 font-mono text-[11px] tracking-[0.14em] text-ink-muted">
+          {isToday ? `TODAY · ${dayLabel(viewDate)}` : `EDITING · ${dayLabel(viewDate)}`}
+        </p>
+        {!isToday && (
+          <Link
+            href="/dashboard"
+            className="ml-auto border border-hairline-strong px-3 py-1.5 font-mono text-[10px] tracking-[0.12em] text-route-deep transition-colors hover:text-route"
+          >
+            BACK TO TODAY
+          </Link>
+        )}
+      </div>
 
-          {/* The chart table: one data line per station, rows sharing rules. */}
-          <div className="plate mt-4 divide-y divide-hairline">{stations}</div>
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start lg:gap-6">
+        {/* Logging comes first on the phone; the month strip leads on desktop. */}
+        <div className="flex min-w-0 flex-col gap-5">
+          <div className="plate divide-y divide-hairline">{stations}</div>
+          <div className="lg:-order-1">
+            <RouteStrip
+              daysInMonth={daysInMonth}
+              todayDay={viewDay}
+              activeDays={activeDays}
+              fullDays={fullDays}
+              monthLabel={monthLabel}
+            />
+          </div>
         </div>
 
         {/* The sheet's margin column: today's plan and the week's profile. */}
-        <div className="mt-4 space-y-4 lg:mt-0">
+        <div className="mt-5 space-y-5 lg:mt-0">
           {show('todaysWorkout') && (
             <div className="plate p-4">
               <div className="flex items-baseline justify-between">
-                <p className="map-label">Today&apos;s workout</p>
+                <p className="map-label">{isToday ? "Today's workout" : 'Workout that day'}</p>
                 <Link
                   href="/workout"
                   className="font-mono text-[10px] tracking-[0.12em] text-route-deep hover:text-route"
@@ -281,9 +322,9 @@ export function DashboardView({
                 </Link>
               </div>
               <select
-                value={todayLog?.workoutSplitDayId ?? ''}
+                value={dayLog?.workoutSplitDayId ?? ''}
                 onChange={async (e) => {
-                  await setWorkoutSplitDayAction(Number(e.target.value));
+                  await setWorkoutSplitDayAction(Number(e.target.value), viewDate);
                   router.refresh();
                 }}
                 className="sheet-title mt-2 w-full border border-hairline bg-surface-sunken px-3 py-2.5 text-lg text-ink"

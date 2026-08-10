@@ -13,7 +13,7 @@ export default async function SettingsPage() {
   return (
     <div className="mx-auto max-w-[720px] p-4 md:p-8">
       <SheetHeader title="Settings" sheet="SHEET 07" note="The atlas's margin notes" />
-      <div className="space-y-4">
+      <div className="space-y-5">
         <ProfileEditForm profile={profile} />
         <ThemePicker themeMode={profile.themeMode} />
         <DataPortabilitySection />

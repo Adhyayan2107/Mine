@@ -2,7 +2,15 @@
 
 import { revalidatePath } from 'next/cache';
 import { db } from '@/db/client';
-import { addSelection, removeSelection, addSet, deleteSet, createExercise } from '@/db/queries/workouts';
+import {
+  addSelection,
+  removeSelection,
+  addSet,
+  deleteSet,
+  createExercise,
+  pairSuperset,
+  unpairSuperset,
+} from '@/db/queries/workouts';
 import { todayDateString } from '@/lib/dates';
 
 function revalidate() {
@@ -20,9 +28,26 @@ export async function removeExerciseAction(exerciseId: number): Promise<void> {
   revalidate();
 }
 
-export async function logSetAction(exerciseId: number, weightKg: number, reps: number): Promise<void> {
+export async function logSetAction(
+  exerciseId: number,
+  weightKg: number,
+  reps: number,
+  setType: 'normal' | 'drop' = 'normal',
+): Promise<void> {
   if (!Number.isFinite(weightKg) || weightKg < 0 || !Number.isInteger(reps) || reps <= 0) return;
-  await addSet(db, todayDateString(), exerciseId, weightKg, reps);
+  if (setType !== 'normal' && setType !== 'drop') return;
+  await addSet(db, todayDateString(), exerciseId, weightKg, reps, setType);
+  revalidate();
+}
+
+export async function pairSupersetAction(exerciseId: number, partnerId: number): Promise<void> {
+  if (exerciseId === partnerId) return;
+  await pairSuperset(db, todayDateString(), exerciseId, partnerId);
+  revalidate();
+}
+
+export async function unpairSupersetAction(exerciseId: number): Promise<void> {
+  await unpairSuperset(db, todayDateString(), exerciseId);
   revalidate();
 }
 

@@ -79,7 +79,7 @@ export function TodoList({ todos, categories }: { todos: Todo[]; categories: Cat
             const cat = categoryName(todo.categoryId);
             const tag = PRIORITY_TAG[todo.priority] ?? PRIORITY_TAG.medium;
             return (
-              <li key={todo.id} className="flex items-center gap-3 px-3 py-2.5 md:px-4">
+              <li key={todo.id} className="flex items-center gap-3 px-3 py-3 md:px-4">
                 <button
                   onClick={() => toggle(todo)}
                   aria-label={isCompleted ? 'Mark not done' : 'Mark done'}

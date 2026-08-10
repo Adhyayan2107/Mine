@@ -18,8 +18,7 @@ function activityScore(a: DayActivity | undefined): number {
 
 /**
  * The month as the route map: every day a survey plot, every day with
- * activity a camp, and one orange route line threading the camps in order —
- * the month's actual path drawn over the grid.
+ * activity a camp sized by how much was logged.
  */
 export function CalendarGrid({
   year,
@@ -45,16 +44,6 @@ export function CalendarGrid({
   }
   const rows = Math.ceil(cells.length / 7);
 
-  // The route: centers of consecutive camp days, in cell units (100/cell).
-  const campPoints = cells
-    .map((cell, i) => ({ cell, i }))
-    .filter(({ cell }) => cell && cell.date <= today && activityScore(activityByDate[cell.date]) > 0)
-    .map(({ i }) => ({
-      x: (i % 7) * 100 + 50,
-      y: Math.floor(i / 7) * 100 + 50,
-    }));
-  const routePath = campPoints.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x} ${p.y}`).join(' ');
-
   return (
     <>
       <div className="grid grid-cols-7 gap-px border-x border-t border-hairline bg-hairline">
@@ -64,7 +53,7 @@ export function CalendarGrid({
           </div>
         ))}
       </div>
-      <div className="relative">
+      <div>
         <div className="grid grid-cols-7 gap-px border border-hairline bg-hairline">
           {cells.map((cell, i) => {
             if (!cell) return <div key={`blank-${i}`} className="aspect-square bg-surface-sunken/60" />;
@@ -88,8 +77,7 @@ export function CalendarGrid({
                 >
                   {pad(cell.day)}
                 </span>
-                {/* the camp sits at the cell's center so the route line threads through it;
-                    a full log (all four tracked) plants the flag on the camp */}
+                {/* a full log (all four tracked) plants the flag on the camp */}
                 {score > 0 && (
                   <span
                     className="absolute inset-0 m-auto bg-pine"
@@ -118,27 +106,6 @@ export function CalendarGrid({
             <div key={`tail-${i}`} className="aspect-square bg-surface-sunken/60" />
           ))}
         </div>
-
-        {/* The route line, threaded through the month's camps. */}
-        {campPoints.length > 1 && (
-          <svg
-            viewBox={`0 0 700 ${rows * 100}`}
-            preserveAspectRatio="none"
-            className="pointer-events-none absolute inset-0 h-full w-full"
-            aria-hidden="true"
-          >
-            <path
-              d={routePath}
-              fill="none"
-              stroke="var(--color-route)"
-              strokeWidth="2"
-              strokeLinejoin="round"
-              strokeLinecap="round"
-              opacity="0.75"
-              vectorEffect="non-scaling-stroke"
-            />
-          </svg>
-        )}
       </div>
 
       <div className="mt-3 flex items-center gap-4 font-mono text-[10px] tracking-[0.12em] text-ink-faint">

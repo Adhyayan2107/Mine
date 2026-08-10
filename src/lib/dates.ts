@@ -14,6 +14,14 @@ export function todayDateString(): string {
   return dateFormatter.format(new Date());
 }
 
+/** True for a well-formed, real calendar date like 2026-08-10. */
+export function isValidDateString(date: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return false;
+  const [year, month, day] = date.split('-').map(Number);
+  const d = new Date(Date.UTC(year, month - 1, day));
+  return d.getUTCMonth() === month - 1 && d.getUTCDate() === day;
+}
+
 export function addDaysToDateString(date: string, days: number): string {
   const [year, month, day] = date.split('-').map(Number);
   return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);

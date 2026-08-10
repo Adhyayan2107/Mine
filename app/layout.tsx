@@ -43,6 +43,9 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   themeColor: '#e9ede8',
+  // Android: resize the layout viewport when the keyboard opens so bottom
+  // sheets stay above it. iOS ignores this; SheetModal handles it there.
+  interactiveWidget: 'resizes-content',
 };
 
 const DIRECTION_CONTRACT = `

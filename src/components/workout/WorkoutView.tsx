@@ -9,6 +9,8 @@ import {
   logSetAction,
   deleteSetAction,
   createExerciseAction,
+  pairSupersetAction,
+  unpairSupersetAction,
 } from '@/actions/workouts';
 import { SheetHeader } from '@/components/ui/SheetHeader';
 import { SheetModal } from '@/components/ui/SheetModal';
@@ -53,6 +55,7 @@ export function WorkoutView({
   const router = useRouter();
   const [picking, setPicking] = useState(false);
   const [removing, setRemoving] = useState<Exercise | null>(null);
+  const [pairingFor, setPairingFor] = useState<Exercise | null>(null);
   const [, startTransition] = useTransition();
 
   const currentSplit = splitDays.find((d) => d.id === currentSplitId);
@@ -75,6 +78,88 @@ export function WorkoutView({
   const totalSets = sets.length;
   const totalVolume = Math.round(sets.reduce((sum, s) => sum + s.weightKg * s.reps, 0));
 
+  function plateFor(sel: WorkoutSelection, opts: { bare?: boolean; tag?: string } = {}) {
+    const exercise = byId.get(sel.exerciseId);
+    if (!exercise) return null;
+    return (
+      <ExercisePlate
+        key={sel.exerciseId}
+        exercise={exercise}
+        sets={setsByExercise.get(sel.exerciseId) ?? []}
+        last={lastSessions[sel.exerciseId] ?? null}
+        bare={opts.bare}
+        tag={opts.tag}
+        onSuperset={
+          sel.supersetGroup == null && selections.length > 1 ? () => setPairingFor(exercise) : undefined
+        }
+        onRemove={() => {
+          const hasSets = (setsByExercise.get(sel.exerciseId) ?? []).length > 0;
+          if (hasSets) setRemoving(exercise);
+          else
+            startTransition(async () => {
+              await removeExerciseAction(sel.exerciseId);
+              router.refresh();
+            });
+        }}
+        onLog={(w, r, type) =>
+          startTransition(async () => {
+            await logSetAction(sel.exerciseId, w, r, type);
+            router.refresh();
+          })
+        }
+        onDeleteSet={(id) =>
+          startTransition(async () => {
+            await deleteSetAction(id);
+            router.refresh();
+          })
+        }
+      />
+    );
+  }
+
+  // Superset partners render as one joined plate, in first-member order.
+  const byGroup = new Map<number, WorkoutSelection[]>();
+  for (const sel of selections) {
+    if (sel.supersetGroup == null) continue;
+    const list = byGroup.get(sel.supersetGroup) ?? [];
+    list.push(sel);
+    byGroup.set(sel.supersetGroup, list);
+  }
+  const renderedIds = new Set<number>();
+  const plates: React.ReactNode[] = [];
+  for (const sel of selections) {
+    if (renderedIds.has(sel.exerciseId)) continue;
+    const group = sel.supersetGroup != null ? (byGroup.get(sel.supersetGroup) ?? [sel]) : [sel];
+    group.forEach((g) => renderedIds.add(g.exerciseId));
+    if (group.length > 1) {
+      plates.push(
+        <section key={`ss-${sel.supersetGroup}`} className="plate">
+          <div className="flex items-center justify-between bg-surface-sunken px-4 py-2">
+            <p className="font-mono text-[10px] tracking-[0.16em] text-route-deep">
+              SUPERSET · BACK TO BACK, NO REST
+            </p>
+            <button
+              onClick={() =>
+                startTransition(async () => {
+                  await unpairSupersetAction(sel.exerciseId);
+                  router.refresh();
+                })
+              }
+              className="font-mono text-[10px] tracking-[0.12em] text-ink-faint transition-colors hover:text-danger"
+            >
+              BREAK
+            </button>
+          </div>
+          <div className="divide-y divide-hairline-strong border-t border-hairline">
+            {group.map((g, gi) => plateFor(g, { bare: true, tag: `A${gi + 1}` }))}
+          </div>
+        </section>,
+      );
+    } else {
+      plates.push(plateFor(sel));
+    }
+  }
+
   return (
     <div className="mx-auto max-w-[880px] p-4 pb-44 md:p-8 md:pb-28">
       <SheetHeader
@@ -88,7 +173,7 @@ export function WorkoutView({
       />
 
       {/* The day's split sets which exercises lead the picker. */}
-      <div className="plate mb-4 flex items-center gap-3 p-3.5">
+      <div className="plate mb-5 flex items-center gap-3 p-3.5">
         <label htmlFor="split-select" className="map-label shrink-0">
           Split day
         </label>
@@ -122,41 +207,7 @@ export function WorkoutView({
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {selections.map((sel) => {
-            const exercise = byId.get(sel.exerciseId);
-            if (!exercise) return null;
-            return (
-              <ExercisePlate
-                key={sel.exerciseId}
-                exercise={exercise}
-                sets={setsByExercise.get(sel.exerciseId) ?? []}
-                last={lastSessions[sel.exerciseId] ?? null}
-                onRemove={() => {
-                  const hasSets = (setsByExercise.get(sel.exerciseId) ?? []).length > 0;
-                  if (hasSets) setRemoving(exercise);
-                  else
-                    startTransition(async () => {
-                      await removeExerciseAction(sel.exerciseId);
-                      router.refresh();
-                    });
-                }}
-                onLog={(w, r) =>
-                  startTransition(async () => {
-                    await logSetAction(sel.exerciseId, w, r);
-                    router.refresh();
-                  })
-                }
-                onDeleteSet={(id) =>
-                  startTransition(async () => {
-                    await deleteSetAction(id);
-                    router.refresh();
-                  })
-                }
-              />
-            );
-          })}
-        </div>
+        <div className="space-y-5">{plates}</div>
       )}
 
       <button
@@ -225,6 +276,43 @@ export function WorkoutView({
           >
             Done
           </button>
+        </SheetModal>
+      )}
+
+      {pairingFor && (
+        <SheetModal title={`Superset ${pairingFor.name} with…`} onClose={() => setPairingFor(null)}>
+          <p className="mb-3 text-sm leading-relaxed text-ink-muted">
+            Pick the exercise you do back to back with it. Pairing again re-pairs.
+          </p>
+          <ul className="plate divide-y divide-hairline">
+            {selections
+              .filter((s) => s.exerciseId !== pairingFor.id)
+              .map((s) => {
+                const e = byId.get(s.exerciseId);
+                if (!e) return null;
+                return (
+                  <li key={e.id}>
+                    <button
+                      onClick={() =>
+                        startTransition(async () => {
+                          await pairSupersetAction(pairingFor.id, e.id);
+                          setPairingFor(null);
+                          router.refresh();
+                        })
+                      }
+                      className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition-colors hover:bg-surface-raised"
+                    >
+                      <span className="text-ink">{e.name}</span>
+                      {s.supersetGroup != null && (
+                        <span className="font-mono text-[10px] tracking-[0.12em] text-ink-faint">
+                          PAIRED — WILL RE-PAIR
+                        </span>
+                      )}
+                    </button>
+                  </li>
+                );
+              })}
+          </ul>
         </SheetModal>
       )}
 
@@ -318,6 +406,9 @@ function ExercisePlate({
   exercise,
   sets,
   last,
+  bare,
+  tag,
+  onSuperset,
   onRemove,
   onLog,
   onDeleteSet,
@@ -325,8 +416,14 @@ function ExercisePlate({
   exercise: Exercise;
   sets: WorkoutSet[];
   last: LastSession | null;
+  /** Rendered inside a superset frame — the frame owns the plate chrome. */
+  bare?: boolean;
+  /** Superset position label (A1 / A2). */
+  tag?: string;
+  /** Offered only while solo; pairing UI lives on the parent. */
+  onSuperset?: () => void;
   onRemove: () => void;
-  onLog: (weightKg: number, reps: number) => void;
+  onLog: (weightKg: number, reps: number, setType: 'normal' | 'drop') => void;
   onDeleteSet: (id: number) => void;
 }) {
   const lastSet = sets[sets.length - 1];
@@ -348,20 +445,31 @@ function ExercisePlate({
     else trend = 'down';
   }
 
-  function log() {
+  function log(setType: 'normal' | 'drop') {
     const w = parseFloat(weight || `${lastSet?.weightKg ?? last?.bestWeightKg ?? ''}`);
     const r = parseInt(reps || `${lastSet?.reps ?? last?.bestReps ?? ''}`, 10);
     if (Number.isNaN(w) || Number.isNaN(r)) return;
-    onLog(w, r);
+    onLog(w, r, setType);
     setWeight('');
     setReps('');
   }
 
+  // Drop sets ride along unnumbered; only working sets count up.
+  let workingSets = 0;
+  const setLabels: string[] = [];
+  for (const s of sets) {
+    if (s.setType !== 'drop') workingSets += 1;
+    setLabels.push(s.setType === 'drop' ? '↳ DROP' : `SET ${workingSets}`);
+  }
+
   return (
-    <section className="plate">
-      <div className="flex items-center gap-2.5 border-b border-hairline px-3.5 py-3">
+    <section className={bare ? '' : 'plate'}>
+      <div className="flex items-center gap-2.5 border-b border-hairline px-4 py-3">
         <div className="min-w-0 flex-1">
-          <h2 className="truncate font-medium text-ink">{exercise.name}</h2>
+          <h2 className="truncate font-medium text-ink">
+            {tag && <span className="mr-1.5 font-mono text-[11px] tracking-[0.1em] text-route-deep">{tag}</span>}
+            {exercise.name}
+          </h2>
           <p className="mt-0.5 font-mono text-[10px] tracking-[0.12em] text-ink-faint">
             {exercise.muscleGroup.toUpperCase()}
             {!last && ' · FIRST ASCENT'}
@@ -372,10 +480,19 @@ function ExercisePlate({
               {last.detail.map((d, i) => (
                 <span key={i}>
                   {i > 0 && <span className="text-ink-faint"> · </span>}
+                  {d.setType === 'drop' && <span className="text-ink-faint">↳</span>}
                   {d.weightKg}×{d.reps}
                 </span>
               ))}
             </p>
+          )}
+          {onSuperset && (
+            <button
+              onClick={onSuperset}
+              className="mt-1.5 font-mono text-[10px] tracking-[0.12em] text-route-deep transition-colors hover:text-route"
+            >
+              + SUPERSET
+            </button>
           )}
         </div>
         {trend === 'up' && <TrendUpGlyph className="shrink-0 text-pine" />}
@@ -392,32 +509,37 @@ function ExercisePlate({
 
       {sets.length > 0 && (
         <ul className="divide-y divide-hairline border-b border-hairline">
-          {sets.map((s) => (
-            <li key={s.id} className="flex items-center gap-3 px-3.5 py-2">
-              <span className="font-mono text-[10px] tracking-[0.12em] text-ink-faint">
-                SET {s.setNumber}
-              </span>
-              <span className="tabular flex-1 text-right font-mono text-sm text-ink">
-                <span className="altitude text-lg">{s.weightKg}</span> kg ×{' '}
-                <span className="altitude text-lg">{s.reps}</span>
-              </span>
-              {/* a set heavier than last session's best plants the PR flag */}
-              {last && s.weightKg > last.bestWeightKg && (
-                <WaypointFlag size={11} className="text-route" />
-              )}
-              <button
-                onClick={() => onDeleteSet(s.id)}
-                aria-label={`Delete set ${s.setNumber}`}
-                className="p-1.5 text-ink-faint transition-colors hover:text-danger"
-              >
-                <XGlyph size={12} />
-              </button>
-            </li>
-          ))}
+          {sets.map((s, i) => {
+            const isDrop = s.setType === 'drop';
+            return (
+              <li key={s.id} className={`flex items-center gap-3 py-2 pr-3.5 ${isDrop ? 'pl-8' : 'pl-4'}`}>
+                <span
+                  className={`font-mono text-[10px] tracking-[0.12em] ${isDrop ? 'text-route-deep' : 'text-ink-faint'}`}
+                >
+                  {setLabels[i]}
+                </span>
+                <span className="tabular flex-1 text-right font-mono text-sm text-ink">
+                  <span className="altitude text-lg">{s.weightKg}</span> kg ×{' '}
+                  <span className="altitude text-lg">{s.reps}</span>
+                </span>
+                {/* a set heavier than last session's best plants the PR flag */}
+                {last && s.weightKg > last.bestWeightKg && (
+                  <WaypointFlag size={11} className="text-route" />
+                )}
+                <button
+                  onClick={() => onDeleteSet(s.id)}
+                  aria-label={`Delete set ${s.setNumber}`}
+                  className="p-1.5 text-ink-faint transition-colors hover:text-danger"
+                >
+                  <XGlyph size={12} />
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
 
-      <div className="flex items-end gap-2 px-3.5 py-3">
+      <div className="flex items-end gap-2 px-4 py-3">
         <div className="flex-1">
           <label htmlFor={`w-${exercise.id}`} className="map-label mb-1 block text-[10px]">
             Weight (kg)
@@ -442,16 +564,25 @@ function ExercisePlate({
             inputMode="numeric"
             value={reps}
             onChange={(e) => setReps(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && log()}
+            onKeyDown={(e) => e.key === 'Enter' && log('normal')}
             placeholder={`${lastSet?.reps ?? last?.bestReps ?? 0}`}
             className="tabular w-full border border-hairline bg-surface-sunken px-3 py-2.5 font-mono text-lg text-ink placeholder:text-ink-faint"
           />
         </div>
+        {sets.length > 0 && (
+          <button
+            onClick={() => log('drop')}
+            title="Log a drop set — lower the weight, no rest"
+            className="shrink-0 border border-hairline-strong px-3 py-2.5 font-mono text-[11px] tracking-[0.08em] text-ink-muted transition-transform active:scale-[0.97]"
+          >
+            DROP
+          </button>
+        )}
         <button
-          onClick={log}
+          onClick={() => log('normal')}
           className="shrink-0 bg-route px-4 py-2.5 font-semibold text-route-ink transition-transform active:scale-[0.97]"
         >
-          Log set {sets.length + 1}
+          Log set {workingSets + 1}
         </button>
       </div>
     </section>

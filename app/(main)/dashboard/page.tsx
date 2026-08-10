@@ -6,7 +6,7 @@ import { listActiveHabits, listCompletedHabitIdsForDate } from '@/db/queries/hab
 import { listDueTodayOrOverdue } from '@/db/queries/todos';
 import { listDashboardWidgets } from '@/db/queries/dashboard-widgets';
 import { getMonthActivity } from '@/db/queries/calendar';
-import { todayDateString } from '@/lib/dates';
+import { todayDateString, isValidDateString } from '@/lib/dates';
 import { DashboardView } from '@/components/dashboard/DashboardView';
 
 const MONTH_NAMES = [
@@ -18,9 +18,17 @@ function pad(n: number): string {
   return n.toString().padStart(2, '0');
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ d?: string }>;
+}) {
   const today = todayDateString();
-  const [year, month, todayDay] = today.split('-').map(Number);
+  // ?d= navigates the sheet to a past day for review and backfilling.
+  // Malformed or future dates fall back to today.
+  const { d } = await searchParams;
+  const viewDate = d && isValidDateString(d) && d < today ? d : today;
+  const [year, month, viewDay] = viewDate.split('-').map(Number);
   const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
   const monthStart = `${year}-${pad(month)}-01`;
   const monthEnd = `${year}-${pad(month)}-${pad(daysInMonth)}`;
@@ -40,17 +48,17 @@ export default async function DashboardPage() {
     getProfile(db),
     listWorkoutSplitDays(db),
     listActiveHabits(db),
-    listCompletedHabitIdsForDate(db, today),
-    listDueTodayOrOverdue(db, today),
-    listLastNDays(db, 7, today),
-    getWorkoutStreak(db, today),
+    listCompletedHabitIdsForDate(db, viewDate),
+    listDueTodayOrOverdue(db, viewDate),
+    listLastNDays(db, 7, viewDate),
+    getWorkoutStreak(db, viewDate),
     listDashboardWidgets(db),
     getMonthActivity(db, monthStart, monthEnd),
     allTimeHighWeight(db),
   ]);
-  // The 7-day window ends today — today's log rides along instead of being
-  // its own round trip.
-  const todayLog = weekLogs.find((l) => l.date === today) ?? null;
+  // The 7-day window ends on the viewed day — its log rides along instead of
+  // being its own round trip.
+  const dayLog = weekLogs.find((l) => l.date === viewDate) ?? null;
 
   if (!profile) return <div className="p-4">Setting things up…</div>;
 
@@ -72,7 +80,9 @@ export default async function DashboardPage() {
   return (
     <DashboardView
       profile={profile}
-      todayLog={todayLog}
+      dayLog={dayLog}
+      viewDate={viewDate}
+      isToday={viewDate === today}
       splitDays={splitDays}
       enabledWidgetKeys={enabledWidgetKeys}
       habitRatio={habitRatio}
@@ -81,7 +91,7 @@ export default async function DashboardPage() {
       weeklyWeights={weeklyWeights}
       athWeight={athWeight}
       daysInMonth={daysInMonth}
-      todayDay={todayDay}
+      viewDay={viewDay}
       activeDays={activeDays}
       fullDays={fullDays}
       monthLabel={`${MONTH_NAMES[month - 1]} ${year}`}

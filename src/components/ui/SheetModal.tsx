@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 /**
@@ -16,9 +17,27 @@ export function SheetModal({
   onClose: () => void;
   children: React.ReactNode;
 }) {
+  // iOS keeps `fixed` elements pinned to the layout viewport while the
+  // keyboard shrinks only the visual viewport — so the bottom sheet ends up
+  // under the keyboard. Track the visual viewport and size the overlay to
+  // it; the sheet then rests on the keyboard's top edge.
+  const [box, setBox] = useState<{ top: number; height: number } | null>(null);
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const update = () => setBox({ top: vv.offsetTop, height: vv.height });
+    vv.addEventListener('resize', update);
+    vv.addEventListener('scroll', update);
+    return () => {
+      vv.removeEventListener('resize', update);
+      vv.removeEventListener('scroll', update);
+    };
+  }, []);
+
   return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-end bg-ink/45 md:items-center md:justify-center"
+      style={box ? { top: box.top, height: box.height, bottom: 'auto' } : undefined}
       onClick={onClose}
     >
       <div
@@ -26,7 +45,7 @@ export function SheetModal({
         aria-modal="true"
         aria-label={title}
         onClick={(e) => e.stopPropagation()}
-        className="sheet-enter max-h-[88vh] w-full overflow-y-auto border-t border-hairline bg-surface-raised shadow-[0_16px_48px_-16px_rgba(10,20,16,0.5)] md:w-[26rem] md:border"
+        className="sheet-enter max-h-[88%] w-full overflow-y-auto border-t border-hairline bg-surface-raised shadow-[0_16px_48px_-16px_rgba(10,20,16,0.5)] md:w-[26rem] md:border"
       >
         <div className="flex items-center justify-between border-b border-hairline px-5 py-3.5">
           <h2 className="sheet-title text-xl text-ink">{title}</h2>
