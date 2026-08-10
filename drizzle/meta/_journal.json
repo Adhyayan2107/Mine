@@ -6,35 +6,35 @@
       "idx": 0,
       "version": "7",
       "when": 1786134024853,
-      "tag": "0000_ancient_random",
+      "tag": "0000_initial_schema",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
       "when": 1786148677065,
-      "tag": "0001_nasty_bloodstrike",
+      "tag": "0001_todos_due_time",
       "breakpoints": true
     },
     {
       "idx": 2,
       "version": "7",
       "when": 1786152229492,
-      "tag": "0002_flat_nuke",
+      "tag": "0002_workout_tracker",
       "breakpoints": true
     },
     {
       "idx": 3,
       "version": "7",
       "when": 1786337630852,
-      "tag": "0003_hard_shatterstar",
+      "tag": "0003_supersets_dropsets",
       "breakpoints": true
     },
     {
       "idx": 4,
       "version": "7",
       "when": 1786339151943,
-      "tag": "0004_tired_nova",
+      "tag": "0004_cardio_workout_finish",
       "breakpoints": true
     }
   ]
