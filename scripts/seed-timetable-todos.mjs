@@ -8,7 +8,8 @@ import dotenv from 'dotenv';
 import { Pool } from 'pg';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.join(__dirname, '..', '.env.local') });
+const ENV_FILE = process.argv[3] ?? '.env.local';
+dotenv.config({ path: path.join(__dirname, '..', ENV_FILE), override: true });
 
 const START_DATE = process.argv[2] ?? '2026-08-20'; // Day 1
 

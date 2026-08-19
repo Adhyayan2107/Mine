@@ -3,6 +3,7 @@ import { Barlow, Barlow_Condensed, Chivo_Mono } from 'next/font/google';
 import './globals.css';
 import { db } from '@/db/client';
 import { seedIfNeeded } from '@/db/seed';
+import { seedTimetableTodosIfNeeded } from '@/db/seed-timetable';
 import { getProfile } from '@/db/queries/profile';
 import { PWARegister } from '@/components/pwa/PWARegister';
 
@@ -72,6 +73,7 @@ finish review, the verdict, and DESIGN.md.
 // on every request when awaited inline. Run it once per server process; on
 // failure the memo resets so the next request retries.
 let seedOnce: Promise<void> | null = null;
+let timetableSeedOnce: Promise<void> | null = null;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   seedOnce ??= seedIfNeeded(db).catch((err) => {
@@ -79,6 +81,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     throw err;
   });
   await seedOnce;
+  timetableSeedOnce ??= seedTimetableTodosIfNeeded(db).catch((err) => {
+    timetableSeedOnce = null;
+    throw err;
+  });
+  await timetableSeedOnce;
   const profile = await getProfile(db);
   const themeMode = profile?.themeMode ?? 'dark';
   const isDark = themeMode !== 'light';
